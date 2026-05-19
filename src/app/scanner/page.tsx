@@ -18,6 +18,7 @@ export default function ScannerPage() {
   const [lastScan, setLastScan] = useState<string | null>(null);
   const [scannedMatches, setScannedMatches] = useState(0);
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [include8xbet, setInclude8xbet] = useState(false);
 
   const checkAuth = useCallback(async () => {
     const supabase = createClient();
@@ -34,7 +35,7 @@ export default function ScannerPage() {
     setError(null);
     try {
       const res = await fetch(
-        `/api/odds?total_stake=${totalStake}&min_profit=${minProfit}`
+        `/api/odds?total_stake=${totalStake}&min_profit=${minProfit}${include8xbet ? "&include_8xbet=true" : ""}`
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Scan failed");
@@ -47,7 +48,7 @@ export default function ScannerPage() {
     } finally {
       setLoading(false);
     }
-  }, [totalStake, minProfit]);
+  }, [totalStake, minProfit, include8xbet]);
 
   useEffect(() => {
     if (!autoRefresh) return;
@@ -135,15 +136,26 @@ export default function ScannerPage() {
           </div>
 
           <div className="mt-2 flex items-center gap-2">
-            <label className="flex cursor-pointer items-center gap-1.5 text-xs text-emerald-100">
-              <input
-                type="checkbox"
-                checked={autoRefresh}
-                onChange={(e) => setAutoRefresh(e.target.checked)}
-                className="rounded"
-              />
-              Auto-refresh (60s)
-            </label>
+            <div className="mt-2 flex items-center gap-4">
+              <label className="flex cursor-pointer items-center gap-1.5 text-xs text-emerald-100">
+                <input
+                  type="checkbox"
+                  checked={autoRefresh}
+                  onChange={(e) => setAutoRefresh(e.target.checked)}
+                  className="rounded"
+                />
+                Auto-refresh (60s)
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5 text-xs text-emerald-100">
+                <input
+                  type="checkbox"
+                  checked={include8xbet}
+                  onChange={(e) => setInclude8xbet(e.target.checked)}
+                  className="rounded"
+                />
+                🏠 8xBet
+              </label>
+            </div>
           </div>
         </div>
       </div>
