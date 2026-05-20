@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import BottomNav from "@/components/bottom-nav";
 import Link from "next/link";
 import { getBookmakerUrl } from "@/lib/bookmakers";
+import { useI18n } from "@/lib/i18n/provider";
 import {
   Brain,
   TrendingUp,
@@ -78,20 +79,9 @@ const sportEmoji: Record<string, string> = {
   rugby: "🏉",
 };
 
-const sportLabels: Record<string, string> = {
-  soccer: "Bóng đá",
-  basketball: "Bóng rổ",
-  tennis: "Quần vợt",
-  baseball: "Bóng chày",
-  hockey: "Khúc côn cầu",
-  mma: "MMA",
-  boxing: "Boxing",
-  cricket: "Cricket",
-  rugby: "Rugby",
-};
-
 export default function AIAnalyzerPage() {
   const router = useRouter();
+  const { t, locale } = useI18n();
   const [data, setData] = useState<ScanResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -134,11 +124,10 @@ export default function AIAnalyzerPage() {
   const analyzeWithAI = useCallback(
     async (analysis: OUAnalysis) => {
       const key = `${analysis.match.id}-${analysis.line}`;
-      if (loadingAi === key || !process.env.NEXT_PUBLIC_OPENAI_ENABLED) return;
+      if (loadingAi === key) return;
 
       setLoadingAi(key);
       try {
-        // Call the AI analyzer with include_ai flag for a single match
         const res = await fetch(
           `/api/ai-analyzer?min_discrepancy=0&include_ai=true`
         );
@@ -157,7 +146,6 @@ export default function AIAnalyzerPage() {
           }
         }
       } catch {
-        // Fallback: generate a smart local analysis
         const localInsight = generateLocalInsight(analysis);
         setAiInsights((prev) => {
           const next = new Map(prev);
@@ -180,7 +168,7 @@ export default function AIAnalyzerPage() {
 
   const formatTime = (iso: string) => {
     const date = new Date(iso);
-    return date.toLocaleString("vi-VN", {
+    return date.toLocaleString(locale === "vi" ? "vi-VN" : "en-US", {
       day: "2-digit",
       month: "2-digit",
       hour: "2-digit",
@@ -189,10 +177,15 @@ export default function AIAnalyzerPage() {
   };
 
   const getRiskLevel = (a: OUAnalysis) => {
-    if (a.discrepancy.isArbitrage) return { label: "Surebet", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/30" };
-    if (a.discrepancy.spread > 0.1) return { label: "Cao", color: "text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/30" };
-    if (a.discrepancy.spread > 0.05) return { label: "Trung bình", color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/30" };
-    return { label: "Thấp", color: "text-gray-400", bg: "bg-gray-500/10 border-gray-500/30" };
+    if (a.discrepancy.isArbitrage) return { label: t.aiAnalyzer.riskSurebet, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/30" };
+    if (a.discrepancy.spread > 0.1) return { label: t.aiAnalyzer.riskHigh, color: "text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/30" };
+    if (a.discrepancy.spread > 0.05) return { label: t.aiAnalyzer.riskMedium, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/30" };
+    return { label: t.aiAnalyzer.riskLow, color: "text-gray-400", bg: "bg-gray-500/10 border-gray-500/30" };
+  };
+
+  const sportLabels: Record<string, Record<string, string>> = {
+    vi: { soccer: "Bóng đá", basketball: "Bóng rổ", tennis: "Quần vợt", baseball: "Bóng chày", hockey: "Khúc côn cầu", mma: "MMA", boxing: "Boxing", cricket: "Cricket", rugby: "Rugby" },
+    en: { soccer: "Soccer", basketball: "Basketball", tennis: "Tennis", baseball: "Baseball", hockey: "Hockey", mma: "MMA", boxing: "Boxing", cricket: "Cricket", rugby: "Rugby" },
   };
 
   return (
@@ -211,10 +204,10 @@ export default function AIAnalyzerPage() {
               <div>
                 <h1 className="text-xl font-bold flex items-center gap-2">
                   <Brain className="h-5 w-5" />
-                  AI Analyzer
+                  {t.aiAnalyzer.title}
                 </h1>
                 <p className="text-xs text-purple-200">
-                  Phân tích chênh lệch kèo Tài/Xỉu
+                  {t.aiAnalyzer.subtitle}
                 </p>
               </div>
             </div>
@@ -229,12 +222,12 @@ export default function AIAnalyzerPage() {
           {/* Help panel */}
           {showHelp && (
             <div className="mt-3 rounded-xl bg-white/10 border border-white/20 p-3 space-y-2">
-              <p className="text-xs font-bold text-white">📌 Hướng dẫn nhanh:</p>
+              <p className="text-xs font-bold text-white">{t.aiAnalyzer.helpTitle}</p>
               <div className="space-y-1 text-xs text-purple-100">
-                <p>1. Nhấn <strong>Phân tích AI</strong> để quét kèo Tài/Xỉu</p>
-                <p>2. Nhấn vào trận đấu để xem chi tiết chênh lệch odds</p>
-                <p>3. Nhấn <strong>Phân tích bằng AI</strong> để lấy khuyến nghị</p>
-                <p>4. 🟢 <strong>Surebet</strong> = tổng xác suất &lt; 100% → luôn có lãi!</p>
+                <p dangerouslySetInnerHTML={{ __html: t.aiAnalyzer.help1 }} />
+                <p>{t.aiAnalyzer.help2}</p>
+                <p dangerouslySetInnerHTML={{ __html: t.aiAnalyzer.help3 }} />
+                <p dangerouslySetInnerHTML={{ __html: t.aiAnalyzer.help4 }} />
               </div>
             </div>
           )}
@@ -243,7 +236,7 @@ export default function AIAnalyzerPage() {
           <div className="mt-3 flex items-end gap-3">
             <div className="flex-1">
               <label className="text-xs text-purple-200">
-                Min chênh lệch (%)
+                {t.aiAnalyzer.minSpread}
               </label>
               <Input
                 type="number"
@@ -262,12 +255,12 @@ export default function AIAnalyzerPage() {
               {loading ? (
                 <>
                   <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
-                  Đang quét...
+                  {t.aiAnalyzer.analyzing}
                 </>
               ) : (
                 <>
                   <Sparkles className="h-4 w-4 mr-1" />
-                  Phân tích AI
+                  {t.aiAnalyzer.analyzeButton}
                 </>
               )}
             </Button>
@@ -276,11 +269,11 @@ export default function AIAnalyzerPage() {
           {/* Filter tabs */}
           <div className="mt-3 flex gap-2">
             {[
-              { key: "all" as const, label: "Tất cả", count: data?.analysesCount },
-              { key: "arbitrage" as const, label: "🎯 Surebet", count: data?.arbitrageCount },
+              { key: "all" as const, label: t.aiAnalyzer.filterAll, count: data?.analysesCount },
+              { key: "arbitrage" as const, label: t.aiAnalyzer.filterSurebet, count: data?.arbitrageCount },
               {
                 key: "discrepancy" as const,
-                label: "📊 Chênh lệch",
+                label: t.aiAnalyzer.filterSpread,
                 count:
                   data?.analyses.filter(
                     (a) => a.discrepancy.spread > 0.05 && !a.discrepancy.isArbitrage
@@ -322,15 +315,15 @@ export default function AIAnalyzerPage() {
           <div className="mb-4 grid grid-cols-4 gap-2">
             <div className="rounded-xl bg-gray-800 p-3 text-center">
               <p className="text-lg font-bold text-white">{data.totalMatches}</p>
-              <p className="text-[10px] text-gray-400">Trận</p>
+              <p className="text-[10px] text-gray-400">{t.aiAnalyzer.statMatches}</p>
             </div>
             <div className="rounded-xl bg-gray-800 p-3 text-center">
               <p className="text-lg font-bold text-purple-400">{data.analysesCount}</p>
-              <p className="text-[10px] text-gray-400">Kèo O/U</p>
+              <p className="text-[10px] text-gray-400">{t.aiAnalyzer.statOU}</p>
             </div>
             <div className="rounded-xl bg-gray-800 p-3 text-center">
               <p className="text-lg font-bold text-emerald-400">{data.arbitrageCount}</p>
-              <p className="text-[10px] text-gray-400">Surebet</p>
+              <p className="text-[10px] text-gray-400">{t.aiAnalyzer.statSurebet}</p>
             </div>
             <div className="rounded-xl bg-gray-800 p-3 text-center">
               <p className="text-lg font-bold text-yellow-400">
@@ -338,7 +331,7 @@ export default function AIAnalyzerPage() {
                   ? `${(Math.max(...data.analyses.map((a) => a.discrepancy.spread)) * 100).toFixed(1)}%`
                   : "0%"}
               </p>
-              <p className="text-[10px] text-gray-400">Max Spread</p>
+              <p className="text-[10px] text-gray-400">{t.aiAnalyzer.statMaxSpread}</p>
             </div>
           </div>
         )}
@@ -349,22 +342,22 @@ export default function AIAnalyzerPage() {
             <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-purple-500/10 mb-4">
               <Brain className="h-10 w-10 text-purple-400" />
             </div>
-            <h2 className="text-xl font-bold text-white">AI O/U Analyzer</h2>
+            <h2 className="text-xl font-bold text-white">{t.aiAnalyzer.emptyTitle}</h2>
             <p className="mt-2 text-gray-400 max-w-sm mx-auto">
-              Quét kèo Tài/Xỉu từ các nhà cái, phát hiện chênh lệch odds và cơ hội surebet bằng AI
+              {t.aiAnalyzer.emptyDesc}
             </p>
             <div className="mt-6 space-y-3 text-sm text-gray-500 max-w-xs mx-auto text-left">
               <div className="flex items-start gap-2">
                 <Target className="h-4 w-4 text-purple-400 mt-0.5 shrink-0" />
-                <span>Tìm kèo Tài/Xỉu có chênh lệch odds lớn nhất giữa các nhà cái</span>
+                <span>{t.aiAnalyzer.emptyTip1}</span>
               </div>
               <div className="flex items-start gap-2">
                 <BarChart3 className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" />
-                <span>Phân tích xác suất ẩn, xác định surebet (lãi chắc chắn)</span>
+                <span>{t.aiAnalyzer.emptyTip2}</span>
               </div>
               <div className="flex items-start gap-2">
                 <Zap className="h-4 w-4 text-yellow-400 mt-0.5 shrink-0" />
-                <span>AI đưa ra khuyến nghị dựa trên dữ liệu odds thực tế</span>
+                <span>{t.aiAnalyzer.emptyTip3}</span>
               </div>
             </div>
             <Button
@@ -372,7 +365,7 @@ export default function AIAnalyzerPage() {
               className="mt-8 bg-purple-600 hover:bg-purple-500 text-white font-bold px-8"
             >
               <Sparkles className="h-4 w-4 mr-2" />
-              Bắt đầu phân tích
+              {t.aiAnalyzer.startAnalysis}
             </Button>
           </div>
         )}
@@ -381,8 +374,8 @@ export default function AIAnalyzerPage() {
         {loading && !data && (
           <div className="py-16 text-center">
             <RefreshCw className="h-10 w-10 text-purple-400 animate-spin mx-auto" />
-            <p className="mt-4 text-gray-400">Đang quét odds từ các nhà cái...</p>
-            <p className="mt-1 text-xs text-gray-500">Có thể mất 5-10 giây</p>
+            <p className="mt-4 text-gray-400">{t.aiAnalyzer.scanningMsg}</p>
+            <p className="mt-1 text-xs text-gray-500">{t.aiAnalyzer.scanningTime}</p>
           </div>
         )}
 
@@ -391,15 +384,11 @@ export default function AIAnalyzerPage() {
           <Card className="border-white/5 bg-gray-900">
             <CardContent className="py-8 text-center">
               <p className="text-4xl">🔍</p>
-              <p className="mt-2 font-medium text-gray-300">
-                Không tìm thấy kèo phù hợp
-              </p>
-              <p className="mt-1 text-sm text-gray-500">
-                Thử giảm min chênh lệch hoặc đổi bộ lọc
-              </p>
+              <p className="mt-2 font-medium text-gray-300">{t.aiAnalyzer.noResults}</p>
+              <p className="mt-1 text-sm text-gray-500">{t.aiAnalyzer.noResultsDesc}</p>
               <div className="mt-4 space-y-1 text-xs text-gray-600">
-                <p>💡 Thử giảm min spread xuống 0%</p>
-                <p>💡 Chuyển sang tab "Tất cả" để xem toàn bộ</p>
+                <p>{t.aiAnalyzer.noResultsTip1}</p>
+                <p>{t.aiAnalyzer.noResultsTip2}</p>
               </div>
             </CardContent>
           </Card>
@@ -411,7 +400,7 @@ export default function AIAnalyzerPage() {
           const isExpanded = expandedId === key;
           const risk = getRiskLevel(analysis);
           const emoji = sportEmoji[analysis.match.sport] || "🏆";
-          const sportName = sportLabels[analysis.match.sport] || analysis.match.sport;
+          const sportName = sportLabels[locale]?.[analysis.match.sport] || analysis.match.sport;
 
           return (
             <Card
@@ -443,21 +432,19 @@ export default function AIAnalyzerPage() {
                   </div>
 
                   <div className="flex items-center gap-3 shrink-0 ml-3">
-                    {/* Risk badge */}
                     <span
                       className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${risk.bg} ${risk.color}`}
                     >
                       {risk.label}
                     </span>
 
-                    {/* Profit or Spread */}
                     <div className="text-right">
                       {analysis.discrepancy.isArbitrage ? (
                         <>
                           <p className="text-sm font-bold text-emerald-400">
                             +{analysis.discrepancy.arbitrageProfit?.toFixed(2)}%
                           </p>
-                          <p className="text-[10px] text-gray-400">Surebet</p>
+                          <p className="text-[10px] text-gray-400">{t.common.surebet}</p>
                         </>
                       ) : (
                         <>
@@ -487,7 +474,7 @@ export default function AIAnalyzerPage() {
                       <div className="flex items-center gap-1 mb-1">
                         <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
                         <span className="text-[10px] font-medium text-emerald-400">
-                          BEST TÀI (Over)
+                          {t.aiAnalyzer.bestOver}
                         </span>
                       </div>
                       <p className="text-xl font-bold text-white">
@@ -513,7 +500,7 @@ export default function AIAnalyzerPage() {
                       <div className="flex items-center gap-1 mb-1">
                         <TrendingDown className="h-3.5 w-3.5 text-blue-400" />
                         <span className="text-[10px] font-medium text-blue-400">
-                          BEST XỈU (Under)
+                          {t.aiAnalyzer.bestUnder}
                         </span>
                       </div>
                       <p className="text-xl font-bold text-white">
@@ -542,7 +529,7 @@ export default function AIAnalyzerPage() {
                     <div className="flex items-center gap-2 mb-2">
                       <BarChart3 className="h-3.5 w-3.5 text-purple-400" />
                       <span className="text-xs font-medium text-purple-400">
-                        Phân tích xác suất
+                        {t.aiAnalyzer.impliedAnalysis}
                       </span>
                     </div>
                     <div className="grid grid-cols-3 gap-2 text-center">
@@ -559,7 +546,7 @@ export default function AIAnalyzerPage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">Total</p>
+                        <p className="text-xs text-gray-400">{t.aiAnalyzer.total}</p>
                         <p
                           className={`text-sm font-mono font-bold ${
                             analysis.discrepancy.impliedProbSum < 1
@@ -590,12 +577,12 @@ export default function AIAnalyzerPage() {
                         {analysis.discrepancy.impliedProbSum < 1 ? (
                           <>
                             <CheckCircle2 className="h-3 w-3 text-emerald-400" />
-                            Tổng xác suất &lt; 100% → Có surebet!
+                            {t.aiAnalyzer.surebetDetected}
                           </>
                         ) : (
                           <>
                             <Info className="h-3 w-3 text-yellow-400" />
-                            Tổng xác suất &gt; 100% → Chênh lệch nhưng không surebet
+                            {t.aiAnalyzer.noSurebet}
                           </>
                         )}
                       </p>
@@ -605,14 +592,13 @@ export default function AIAnalyzerPage() {
                   {/* All bookmaker odds table */}
                   <div className="px-4 py-3 border-t border-white/5">
                     <p className="text-xs font-medium text-gray-400 mb-2">
-                      So sánh odds tất cả nhà cái ({analysis.bookmakerOdds.length})
+                      {t.aiAnalyzer.oddsComparison.replace("{count}", String(analysis.bookmakerOdds.length))}
                     </p>
                     <div className="space-y-1">
-                      {/* Header */}
                       <div className="grid grid-cols-[1fr_60px_60px] gap-1 text-[10px] text-gray-500 px-2">
-                        <span>Nhà cái</span>
-                        <span className="text-center">Tài</span>
-                        <span className="text-center">Xỉu</span>
+                        <span>{t.aiAnalyzer.bookmakerCol}</span>
+                        <span className="text-center">{t.aiAnalyzer.overCol}</span>
+                        <span className="text-center">{t.aiAnalyzer.underCol}</span>
                       </div>
                       {analysis.bookmakerOdds.map((bk, i) => (
                         <div
@@ -664,7 +650,7 @@ export default function AIAnalyzerPage() {
                         <div className="flex items-center gap-1.5 mb-2">
                           <Sparkles className="h-3.5 w-3.5 text-purple-400" />
                           <span className="text-xs font-medium text-purple-400">
-                            Phân tích AI
+                            {t.aiAnalyzer.aiInsight}
                           </span>
                         </div>
                         <div className="rounded-lg bg-purple-500/10 border border-purple-500/20 p-3 text-xs text-gray-300 whitespace-pre-wrap leading-relaxed">
@@ -682,12 +668,12 @@ export default function AIAnalyzerPage() {
                         {loadingAi === key ? (
                           <>
                             <RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                            AI đang phân tích...
+                            {t.aiAnalyzer.aiAnalyzing}
                           </>
                         ) : (
                           <>
                             <Brain className="h-3.5 w-3.5 mr-1.5" />
-                            Phân tích bằng AI
+                            {t.aiAnalyzer.aiAnalyzeButton}
                           </>
                         )}
                       </Button>
@@ -698,7 +684,7 @@ export default function AIAnalyzerPage() {
                   <div className="px-4 py-2 border-t border-white/5 bg-gray-950/50">
                     <p className="text-[10px] text-gray-500 flex items-center gap-1">
                       <Info className="h-3 w-3" />
-                      Kick-off: {formatTime(analysis.match.commenceTime)}
+                      {t.aiAnalyzer.kickoff} {formatTime(analysis.match.commenceTime)}
                     </p>
                   </div>
                 </div>
@@ -710,8 +696,8 @@ export default function AIAnalyzerPage() {
         {/* Scan timestamp */}
         {data && (
           <div className="mt-4 text-center text-[10px] text-gray-600">
-            <p>Quét lúc: {new Date(data.scannedAt).toLocaleString("vi-VN")} • Cache: 30 giây</p>
-            <Link href="/guide" className="text-gray-500 hover:text-gray-400">Xem hướng dẫn chi tiết →</Link>
+            <p>{t.common.scannedAt.replace("{time}", new Date(data.scannedAt).toLocaleString(locale === "vi" ? "vi-VN" : "en-US"))} • {t.common.cachedAgo.replace("{seconds}", "30")}</p>
+            <Link href="/guide" className="text-gray-500 hover:text-gray-400">{t.common.viewGuide}</Link>
           </div>
         )}
       </div>
@@ -727,28 +713,28 @@ function generateLocalInsight(a: OUAnalysis): string {
   const underProb = (1 / a.discrepancy.maxUnderOdds.value * 100).toFixed(1);
   const totalProb = (a.discrepancy.impliedProbSum * 100).toFixed(1);
 
-  let insight = `📊 Phân tích: ${a.match.homeTeam} vs ${a.match.awayTeam}\n`;
-  insight += `Kèo: Tài/Xỉu ${a.line}\n\n`;
+  let insight = `📊 ${a.match.homeTeam} vs ${a.match.awayTeam}\n`;
+  insight += `O/U ${a.line}\n\n`;
 
   if (a.discrepancy.isArbitrage) {
-    insight += `✅ SUREBET PHÁT HIỆN!\n`;
-    insight += `Tổng xác suất ẩn: ${totalProb}% (< 100%)\n`;
-    insight += `Lãi chắc chắn: +${a.discrepancy.arbitrageProfit?.toFixed(2)}%\n\n`;
-    insight += `→ Đặt Tài @${a.discrepancy.maxOverOdds.value.toFixed(2)} (${a.discrepancy.maxOverOdds.bookmaker})\n`;
-    insight += `→ Đặt Xỉu @${a.discrepancy.maxUnderOdds.value.toFixed(2)} (${a.discrepancy.maxUnderOdds.bookmaker})\n`;
-    insight += `\n💡 Đây là cơ hội chênh lệch odds giữa 2 nhà cái. Đặt cược ở cả 2 bên đảm bảo có lãi bất kể kết quả.`;
+    insight += `✅ SUREBET DETECTED!\n`;
+    insight += `Total implied prob: ${totalProb}% (< 100%)\n`;
+    insight += `Guaranteed profit: +${a.discrepancy.arbitrageProfit?.toFixed(2)}%\n\n`;
+    insight += `→ Bet Over @${a.discrepancy.maxOverOdds.value.toFixed(2)} (${a.discrepancy.maxOverOdds.bookmaker})\n`;
+    insight += `→ Bet Under @${a.discrepancy.maxUnderOdds.value.toFixed(2)} (${a.discrepancy.maxUnderOdds.bookmaker})\n`;
+    insight += `\n💡 Odds discrepancy between 2 bookmakers. Betting both sides guarantees profit regardless of result.`;
   } else {
-    insight += `📈 Chênh lệch odds:\n`;
-    insight += `- Tài tốt nhất: ${a.discrepancy.maxOverOdds.value.toFixed(2)} tại ${a.discrepancy.maxOverOdds.bookmaker} (xác suất: ${overProb}%)\n`;
-    insight += `- Xỉu tốt nhất: ${a.discrepancy.maxUnderOdds.value.toFixed(2)} tại ${a.discrepancy.maxUnderOdds.bookmaker} (xác suất: ${underProb}%)\n`;
+    insight += `📈 Odds spread:\n`;
+    insight += `- Best Over: ${a.discrepancy.maxOverOdds.value.toFixed(2)} at ${a.discrepancy.maxOverOdds.bookmaker} (implied: ${overProb}%)\n`;
+    insight += `- Best Under: ${a.discrepancy.maxUnderOdds.value.toFixed(2)} at ${a.discrepancy.maxUnderOdds.bookmaker} (implied: ${underProb}%)\n`;
     insight += `- Spread: ${(a.discrepancy.spread * 100).toFixed(1)}%\n\n`;
 
     if (a.discrepancy.impliedProbSum < 1.05) {
-      insight += `⚡ Gần surebet! Tổng xác suất ${totalProb}% rất gần 100%.\n`;
-      insight += `💡 Theo dõi sát - odds có thể thay đổi tạo thành surebet.`;
+      insight += `⚡ Near surebet! Total prob ${totalProb}% is very close to 100%.\n`;
+      insight += `💡 Watch closely — odds may change to form a surebet.`;
     } else {
-      insight += `💡 Chênh lệch odds giữa các nhà cái cho thấy sự khác biệt trong đánh giá.\n`;
-      insight += `Xem xét xu hướng ghi bàn của cả 2 đội để quyết định Tài hay Xỉu.`;
+      insight += `💡 Odds discrepancy between bookmakers shows different evaluations.\n`;
+      insight += `Consider both teams' scoring trends to decide Over or Under.`;
     }
   }
 

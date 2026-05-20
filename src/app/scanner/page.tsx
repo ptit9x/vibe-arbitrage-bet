@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import BottomNav from "@/components/bottom-nav";
 import { getBookmakerUrl } from "@/lib/bookmakers";
+import { useI18n } from "@/lib/i18n/provider";
 import type { ArbitrageOpportunity } from "@/lib/arbitrage/types";
 import {
   Search,
@@ -23,6 +24,7 @@ import {
 
 export default function ScannerPage() {
   const router = useRouter();
+  const { t, locale } = useI18n();
   const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,12 +75,14 @@ export default function ScannerPage() {
   }, [autoRefresh, scanOdds]);
 
   const formatMoney = (amount: number) =>
-    new Intl.NumberFormat("vi-VN").format(Math.round(amount));
+    new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US").format(Math.round(amount));
+
+  const currencySuffix = "đ";
 
   const marketLabels: Record<string, string> = {
-    h2h: "1X2 (Win/Draw/Win)",
-    spreads: "Handicap",
-    totals: "Tài/Xỉu (O/U)",
+    h2h: t.scanner.marketH2H,
+    spreads: t.scanner.marketSpreads,
+    totals: t.scanner.marketTotals,
   };
 
   const sportEmoji: Record<string, string> = {
@@ -88,6 +92,17 @@ export default function ScannerPage() {
     baseball: "⚾",
     hockey: "🏒",
     mma: "🥊",
+  };
+
+  const translateOutcome = (outcome: string) => {
+    switch (outcome) {
+      case "Over": return t.scanner.legOver;
+      case "Under": return t.scanner.legUnder;
+      case "Draw": return t.scanner.legDraw;
+      case "Home": return t.scanner.legHome;
+      case "Away": return t.scanner.legAway;
+      default: return outcome;
+    }
   };
 
   return (
@@ -106,12 +121,14 @@ export default function ScannerPage() {
               <div>
                 <h1 className="text-xl font-bold flex items-center gap-2">
                   <Search className="h-5 w-5" />
-                  Scanner
+                  {t.scanner.title}
                 </h1>
                 <p className="text-xs text-emerald-100">
                   {lastScan
-                    ? `Quét lúc: ${new Date(lastScan).toLocaleTimeString("vi-VN")} • ${scannedMatches} trận`
-                    : "Sẵn sàng quét"}
+                    ? t.scanner.subtitleScanned
+                        .replace("{time}", new Date(lastScan).toLocaleTimeString(locale === "vi" ? "vi-VN" : "en-US"))
+                        .replace("{count}", String(scannedMatches))
+                    : t.scanner.subtitle}
                 </p>
               </div>
             </div>
@@ -128,16 +145,16 @@ export default function ScannerPage() {
           {/* Help panel */}
           {showHelp && (
             <div className="mt-3 rounded-xl bg-white/10 border border-white/20 p-3 space-y-2">
-              <p className="text-xs font-bold text-white">📌 Hướng dẫn nhanh:</p>
+              <p className="text-xs font-bold text-white">{t.scanner.helpTitle}</p>
               <div className="space-y-1 text-xs text-emerald-100">
-                <p>1. Nhập <strong>Vốn</strong> (VD: 1,000,000đ) và <strong>Min % lợi nhuận</strong></p>
-                <p>2. Nhấn <strong>Scan</strong> để quét odds từ 50+ nhà cái</p>
-                <p>3. Kết quả surebet hiển thị với số tiền đặt ở mỗi cửa</p>
-                <p>4. Bật <strong>Auto-refresh</strong> để quét lại mỗi 60 giây</p>
+                <p dangerouslySetInnerHTML={{ __html: t.scanner.help1 }} />
+                <p dangerouslySetInnerHTML={{ __html: t.scanner.help2 }} />
+                <p>{t.scanner.help3}</p>
+                <p dangerouslySetInnerHTML={{ __html: t.scanner.help4 }} />
               </div>
               <div className="flex items-center gap-1 text-xs text-yellow-200">
                 <AlertCircle className="h-3 w-3" />
-                Odds thay đổi liên tục — hãy đặt cược nhanh khi thấy surebet!
+                {t.scanner.helpWarning}
               </div>
             </div>
           )}
@@ -145,7 +162,7 @@ export default function ScannerPage() {
           {/* Controls */}
           <div className="mt-3 flex items-end gap-2">
             <div className="flex-1 min-w-0">
-              <label className="text-[10px] text-emerald-200">Vốn (VND)</label>
+              <label className="text-[10px] text-emerald-200">{t.scanner.capitalLabel}</label>
               <Input
                 type="number"
                 value={totalStake}
@@ -154,7 +171,7 @@ export default function ScannerPage() {
               />
             </div>
             <div className="w-20">
-              <label className="text-[10px] text-emerald-200">Min %</label>
+              <label className="text-[10px] text-emerald-200">{t.scanner.minPercentLabel}</label>
               <Input
                 type="number"
                 step="0.1"
@@ -172,12 +189,12 @@ export default function ScannerPage() {
               {loading ? (
                 <>
                   <RefreshCw className="h-3.5 w-3.5 mr-1 animate-spin" />
-                  Quét...
+                  {t.common.scanning}
                 </>
               ) : (
                 <>
                   <Search className="h-3.5 w-3.5 mr-1" />
-                  Scan
+                  {t.scanner.scanButton}
                 </>
               )}
             </Button>
@@ -192,7 +209,7 @@ export default function ScannerPage() {
                 onChange={(e) => setAutoRefresh(e.target.checked)}
                 className="rounded"
               />
-              Auto (60s)
+              {t.scanner.autoLabel}
             </label>
             <label className="flex cursor-pointer items-center gap-1.5 text-xs text-emerald-100">
               <input
@@ -223,11 +240,11 @@ export default function ScannerPage() {
           <div className="mb-4 grid grid-cols-3 gap-2">
             <div className="rounded-xl bg-gray-900 border border-white/5 p-3 text-center">
               <p className="text-2xl font-bold text-white">{scannedMatches}</p>
-              <p className="text-[10px] text-gray-500">Trận đã quét</p>
+              <p className="text-[10px] text-gray-500">{t.scanner.matchesScanned}</p>
             </div>
             <div className="rounded-xl bg-gray-900 border border-white/5 p-3 text-center">
               <p className="text-2xl font-bold text-emerald-400">{opportunities.length}</p>
-              <p className="text-[10px] text-gray-500">Surebet</p>
+              <p className="text-[10px] text-gray-500">{t.scanner.surebetCount}</p>
             </div>
             <div className="rounded-xl bg-gray-900 border border-white/5 p-3 text-center">
               <p className="text-2xl font-bold text-yellow-400">
@@ -235,7 +252,7 @@ export default function ScannerPage() {
                   ? `${opportunities[0].profit_percent.toFixed(1)}%`
                   : "0%"}
               </p>
-              <p className="text-[10px] text-gray-500">Best Profit</p>
+              <p className="text-[10px] text-gray-500">{t.scanner.bestProfit}</p>
             </div>
           </div>
         )}
@@ -246,23 +263,23 @@ export default function ScannerPage() {
             <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-emerald-500/10 mb-4">
               <Search className="h-10 w-10 text-emerald-400" />
             </div>
-            <h2 className="text-xl font-bold text-white">Surebet Scanner</h2>
+            <h2 className="text-xl font-bold text-white">{t.scanner.emptyTitle}</h2>
             <p className="mt-2 text-sm text-gray-400 max-w-xs mx-auto">
-              Quét odds từ 50+ nhà cái, tìm cơ hội đặt cược chắc chắn có lãi
+              {t.scanner.emptyDesc}
             </p>
 
             <div className="mt-6 space-y-2 text-sm text-gray-500 max-w-xs mx-auto text-left">
               <div className="flex items-start gap-2">
                 <Zap className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" />
-                <span>Tìm surebet tự động — luôn có lãi bất kể kết quả</span>
+                <span>{t.scanner.emptyTip1}</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-blue-400 mt-0.5 shrink-0" />
-                <span>Tính stake chính xác cho từng cửa, từng nhà cái</span>
+                <span>{t.scanner.emptyTip2}</span>
               </div>
               <div className="flex items-start gap-2">
                 <Info className="h-4 w-4 text-yellow-400 mt-0.5 shrink-0" />
-                <span>Hỗ trợ 1X2, Handicap, Tài/Xỉu ở nhiều môn thể thao</span>
+                <span>{t.scanner.emptyTip3}</span>
               </div>
             </div>
 
@@ -271,7 +288,7 @@ export default function ScannerPage() {
               className="mt-8 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-8"
             >
               <Search className="h-4 w-4 mr-2" />
-              Quét ngay
+              {t.scanner.scanNow}
             </Button>
 
             <div className="mt-4">
@@ -280,7 +297,7 @@ export default function ScannerPage() {
                 className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-300 transition-colors"
               >
                 <HelpCircle className="h-3.5 w-3.5" />
-                Xem hướng dẫn chi tiết
+                {t.common.viewGuide}
               </button>
             </div>
           </div>
@@ -290,8 +307,8 @@ export default function ScannerPage() {
         {loading && !lastScan && (
           <div className="py-16 text-center">
             <RefreshCw className="h-10 w-10 text-emerald-400 animate-spin mx-auto" />
-            <p className="mt-4 text-gray-400">Đang quét odds từ các nhà cái...</p>
-            <p className="mt-1 text-xs text-gray-500">Có thể mất 5-10 giây</p>
+            <p className="mt-4 text-gray-400">{t.scanner.scanningMsg}</p>
+            <p className="mt-1 text-xs text-gray-500">{t.scanner.scanningTime}</p>
           </div>
         )}
 
@@ -300,13 +317,13 @@ export default function ScannerPage() {
           <Card className="border-gray-700 bg-gray-900">
             <CardContent className="py-8 text-center">
               <p className="text-4xl">🔍</p>
-              <p className="mt-2 font-medium text-gray-300">Không tìm thấy surebet</p>
+              <p className="mt-2 font-medium text-gray-300">{t.scanner.noSurebetTitle}</p>
               <p className="mt-1 text-sm text-gray-500">
-                Thử giảm min profit % hoặc bật thêm 8xBet
+                {t.scanner.noSurebetDesc}
               </p>
               <div className="mt-4 space-y-1 text-xs text-gray-600">
-                <p>💡 Mẹo: Surebet xuất hiện nhiều nhất trước giờ bóng đá</p>
-                <p>💡 Thử giảm Min % xuống 0.1% để xem thêm kết quả</p>
+                <p>{t.scanner.noSurebetTip1}</p>
+                <p>{t.scanner.noSurebetTip2}</p>
               </div>
             </CardContent>
           </Card>
@@ -339,7 +356,7 @@ export default function ScannerPage() {
                 <p className="text-lg font-bold text-emerald-400">
                   +{opp.profit_percent}%
                 </p>
-                <p className="text-[10px] text-gray-500">Lãi chắc chắn</p>
+                <p className="text-[10px] text-gray-500">{t.scanner.guaranteedProfitLabel}</p>
               </div>
             </div>
 
@@ -350,7 +367,7 @@ export default function ScannerPage() {
                   <div key={i} className="flex items-center justify-between px-4 py-3">
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-white">
-                        {leg.outcome === "Over" ? "Tài" : leg.outcome === "Under" ? "Xỉu" : leg.outcome}
+                        {translateOutcome(leg.outcome)}
                       </p>
                       <p className="text-xs text-gray-500 truncate">{leg.bookmaker_title}</p>
                       {getBookmakerUrl(leg.bookmaker, leg.bookmaker_title) && (
@@ -361,27 +378,27 @@ export default function ScannerPage() {
                           className="text-[10px] text-blue-400 hover:text-blue-300 hover:underline transition-colors"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          ↗ Mở nhà cái
+                          {t.common.openBookmaker}
                         </a>
                       )}
                     </div>
                     <div className="flex items-center gap-4 shrink-0">
                       <div className="text-right">
-                        <p className="text-[10px] text-gray-500">Odds</p>
+                        <p className="text-[10px] text-gray-500">{t.common.odds}</p>
                         <p className="font-mono text-sm font-bold text-yellow-400">
                           {leg.odds.toFixed(2)}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[10px] text-gray-500">Đặt</p>
+                        <p className="text-[10px] text-gray-500">{t.common.stake}</p>
                         <p className="font-mono text-sm font-medium text-white">
-                          {formatMoney(leg.stake)}đ
+                          {formatMoney(leg.stake)}{currencySuffix}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[10px] text-gray-500">Nhận</p>
+                        <p className="text-[10px] text-gray-500">{t.common.payout}</p>
                         <p className="font-mono text-sm font-medium text-emerald-400">
-                          {formatMoney(leg.payout)}đ
+                          {formatMoney(leg.payout)}{currencySuffix}
                         </p>
                       </div>
                     </div>
@@ -392,10 +409,10 @@ export default function ScannerPage() {
               {/* Summary */}
               <div className="flex items-center justify-between bg-emerald-500/5 px-4 py-2 border-t border-emerald-500/20">
                 <span className="text-xs text-gray-400">
-                  Vốn: <span className="text-white font-medium">{formatMoney(opp.total_stake)}đ</span>
+                  {t.common.capital}: <span className="text-white font-medium">{formatMoney(opp.total_stake)}{currencySuffix}</span>
                 </span>
                 <span className="text-xs text-gray-400">
-                  Lãi: <span className="text-emerald-400 font-bold">+{formatMoney(opp.guaranteed_profit)}đ</span>
+                  {t.common.profit}: <span className="text-emerald-400 font-bold">+{formatMoney(opp.guaranteed_profit)}{currencySuffix}</span>
                 </span>
               </div>
             </CardContent>
@@ -405,10 +422,10 @@ export default function ScannerPage() {
         {/* Scan timestamp */}
         {lastScan && (
           <p className="mt-4 text-center text-[10px] text-gray-600">
-            Quét lúc: {new Date(lastScan).toLocaleString("vi-VN")} • 
-            Cache: 60 giây • 
+            {t.common.scannedAt.replace("{time}", new Date(lastScan).toLocaleString(locale === "vi" ? "vi-VN" : "en-US"))} •{" "}
+            {t.common.cachedAgo.replace("{seconds}", "60")} •{" "}
             <button onClick={() => router.push("/guide")} className="text-gray-500 hover:text-gray-400 ml-1">
-              Hướng dẫn →
+              {t.common.viewGuide}
             </button>
           </p>
         )}

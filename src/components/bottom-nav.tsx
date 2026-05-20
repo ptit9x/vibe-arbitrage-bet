@@ -3,17 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Search, Brain, Calculator, HelpCircle } from "lucide-react";
+import { useI18n } from "@/lib/i18n/provider";
+import LanguageSwitcher from "./language-switcher";
 
 const navItems = [
-  { href: "/dashboard", icon: Home, label: "Home" },
-  { href: "/scanner", icon: Search, label: "Scanner" },
-  { href: "/ai-analyzer", icon: Brain, label: "AI" },
-  { href: "/calculator", icon: Calculator, label: "Calc" },
-  { href: "/guide", icon: HelpCircle, label: "Guide" },
+  { href: "/dashboard", icon: Home, labelKey: "home" as const },
+  { href: "/scanner", icon: Search, labelKey: "scanner" as const },
+  { href: "/ai-analyzer", icon: Brain, labelKey: "ai" as const },
+  { href: "/calculator", icon: Calculator, labelKey: "calc" as const },
+  { href: "/guide", icon: HelpCircle, labelKey: "guide" as const },
 ];
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const { t } = useI18n();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-gray-950/95 backdrop-blur-xl safe-area-bottom">
@@ -35,13 +38,16 @@ export default function BottomNav() {
               <item.icon
                 className={`h-5 w-5 ${isActive ? "text-emerald-400" : ""}`}
               />
-              <span>{item.label}</span>
+              <span>{t.nav[item.labelKey]}</span>
               {isActive && (
                 <div className="absolute bottom-1 h-1 w-1 rounded-full bg-emerald-400" />
               )}
             </Link>
           );
         })}
+        <div className="flex flex-col items-center gap-0.5 px-2 py-2">
+          <LanguageSwitcher />
+        </div>
       </div>
     </nav>
   );
