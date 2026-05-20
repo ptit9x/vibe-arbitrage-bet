@@ -19,10 +19,61 @@ export default function CalculatorPage() {
     stakes: number[];
     payouts: number[];
     profit: number;
+    roundedStakes: number[];
+    roundedPayouts: number[];
+    roundedProfit: number;
+    roundedProfitPercent: number;
+    roundedTotalStake: number;
+    roundMode: string;
   } | null>(null);
 
   const formatMoney = (amount: number) =>
     new Intl.NumberFormat("vi-VN").format(Math.round(amount));
+
+  type RoundMode = "none" | "10k" | "50k" | "100k";
+  const [roundMode, setRoundMode] = useState<RoundMode>("10k");
+
+  const getRoundUnit = (mode: RoundMode): number => {
+    switch (mode) {
+      case "10k": return 10_000;
+      case "50k": return 50_000;
+      case "100k": return 100_000;
+      default: return 1;
+    }
+  };
+
+  // Round stake to nearest unit, preferring round-up for the largest stake
+  // to guarantee profit is still positive
+  const roundStakes = (exactStakes: number[], unit: number, allOdds: number[]): number[] => {
+    if (unit <= 1) return exactStakes.map((s) => Math.round(s));
+
+    const rounded = exactStakes.map((s) => Math.round(s / unit) * unit);
+
+    // Adjust the largest stake to compensate so total still equals the original total
+    // Find the leg where rounding delta is largest (positive = we added money)
+    const totalExact = exactStakes.reduce((a, b) => a + b, 0);
+    const totalRounded = rounded.reduce((a, b) => a + b, 0);
+    const diff = totalRounded - totalExact;
+
+    if (Math.abs(diff) >= unit) {
+      // Find the leg with the largest stake to absorb the difference
+      const maxIdx = exactStakes.indexOf(Math.max(...exactStakes));
+      rounded[maxIdx] = Math.round((exactStakes[maxIdx] - diff) / unit) * unit;
+    }
+
+    // Verify profit is still positive with rounded stakes
+    const payouts = rounded.map((s, i) => s * allOdds[i]);
+    const minPayout = Math.min(...payouts);
+    const totalStakeRounded = rounded.reduce((a, b) => a + b, 0);
+
+    // If profit went negative, nudge the largest stake up by one unit
+    if (minPayout <= totalStakeRounded) {
+      const maxIdx = exactStakes.indexOf(Math.max(...exactStakes));
+      rounded[maxIdx] += unit;
+    }
+
+    return rounded;
+  };
 
   const calculate = () => {
     const o1 = parseFloat(odds1);
@@ -38,11 +89,33 @@ export default function CalculatorPage() {
     const isArb = impliedTotal < 1;
     const pProfit = isArb ? ((1 - impliedTotal) / impliedTotal) * 100 : 0;
 
-    const stakes = allOdds.map((o) => ((1 / o) / impliedTotal) * stake);
-    const payouts = allOdds.map((o, i) => stakes[i] * o);
-    const profit = isArb ? payouts[0] - stake : 0;
+    const exactStakes = allOdds.map((o) => ((1 / o) / impliedTotal) * stake);
+    const exactPayouts = allOdds.map((o, i) => exactStakes[i] * o);
 
-    setResult({ isArb, profitPercent: pProfit, stakes, payouts, profit });
+    // Calculate rounded stakes
+    const unit = getRoundUnit(roundMode);
+    const roundedStakes = roundStakes(exactStakes, unit, allOdds);
+    const roundedPayouts = allOdds.map((o, i) => roundedStakes[i] * o);
+    const roundedMinPayout = Math.min(...roundedPayouts);
+    const roundedTotalStake = roundedStakes.reduce((a, b) => a + b, 0);
+    const roundedProfit = isArb ? roundedMinPayout - roundedTotalStake : 0;
+    const roundedProfitPercent = isArb && roundedTotalStake > 0
+      ? (roundedProfit / roundedTotalStake) * 100
+      : 0;
+
+    setResult({
+      isArb,
+      profitPercent: pProfit,
+      stakes: exactStakes,
+      payouts: exactPayouts,
+      profit: exactPayouts[0] - stake,
+      roundedStakes,
+      roundedPayouts,
+      roundedProfit,
+      roundedProfitPercent,
+      roundedTotalStake,
+      roundMode,
+    });
   };
 
   return (
@@ -118,6 +191,30 @@ export default function CalculatorPage() {
                 className="mt-1 border-gray-600 bg-gray-700 text-white"
               />
             </div>
+            <div>
+              <label className="text-xs text-gray-400 mb-2 block">Làm tròn số tiền đặt</label>
+              <div className="flex gap-2">
+                {([
+                  ["none", "Không"],
+                  ["10k", "10K"],
+                  ["50k", "50K"],
+                  ["100k", "100K"],
+                ] as const).map(([val, label]) => (
+                  <button
+                    key={val}
+                    onClick={() => setRoundMode(val as RoundMode)}
+                    className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+                      roundMode === val
+                        ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/30"
+                        : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-1 text-xs text-gray-500">Số chẵn ít bị chú ý hơn số lẻ</p>
+            </div>
             <Button
               onClick={calculate}
               className="w-full bg-emerald-600 font-bold hover:bg-emerald-700"
@@ -150,40 +247,56 @@ export default function CalculatorPage() {
               {/* Stake breakdown */}
               {result.isArb && (
                 <div className="space-y-2">
-                  {result.stakes.map((stake, i) => {
+                  {result.roundedStakes.map((rStake, i) => {
                     const odds = [odds1, odds2, odds3].filter(Boolean);
+                    const exactStake = result.stakes[i];
+                    const isDifferent = Math.abs(rStake - Math.round(exactStake)) > 1;
                     return (
                       <div
                         key={i}
-                        className="flex items-center justify-between rounded-lg bg-gray-800 px-4 py-3"
+                        className="rounded-lg bg-gray-800 px-4 py-3"
                       >
-                        <div>
-                          <p className="text-sm font-medium text-white">Cửa {i + 1}</p>
-                          <p className="text-xs text-gray-400">
-                            Odds: <span className="text-yellow-400">{parseFloat(odds[i]).toFixed(2)}</span>
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium text-white">
-                            Đặt: {formatMoney(stake)}đ
-                          </p>
-                          <p className="text-xs text-emerald-400">
-                            Nhận: {formatMoney(result.payouts[i])}đ
-                          </p>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-white">Cửa {i + 1}</p>
+                            <p className="text-xs text-gray-400">
+                              Odds: <span className="text-yellow-400">{parseFloat(odds[i]).toFixed(2)}</span>
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-bold text-white">
+                              {formatMoney(rStake)}đ
+                            </p>
+                            {isDifferent && (
+                              <p className="text-xs text-gray-500 line-through">
+                                Chính xác: {formatMoney(exactStake)}đ
+                              </p>
+                            )}
+                            <p className="text-xs text-emerald-400">
+                              Nhận: {formatMoney(result.roundedPayouts[i])}đ
+                            </p>
+                          </div>
                         </div>
                       </div>
                     );
                   })}
 
-                  {/* Summary */}
+                  {/* Rounded Summary */}
                   <div className="mt-3 flex items-center justify-between rounded-lg bg-emerald-900/40 px-4 py-3 border border-emerald-700/50">
                     <span className="text-sm text-gray-300">
-                      Tổng vốn: <strong className="text-white">{formatMoney(parseFloat(totalStake) || 1000000)}đ</strong>
+                      Tổng vốn: <strong className="text-white">{formatMoney(result.roundedTotalStake)}đ</strong>
                     </span>
                     <span className="text-sm text-gray-300">
-                      Lãi: <strong className="text-emerald-400">+{formatMoney(result.profit)}đ</strong>
+                      Lãi: <strong className="text-emerald-400">+{formatMoney(result.roundedProfit)}đ ({result.roundedProfitPercent.toFixed(2)}%)</strong>
                     </span>
                   </div>
+
+                  {/* Safety tip */}
+                  {result.roundMode !== "none" && (
+                    <p className="text-xs text-center text-blue-400 mt-1">
+                      💡 Số chẵn giúp tránh bị flag tài khoản
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -207,6 +320,7 @@ export default function CalculatorPage() {
               <li>• Nếu tổng &lt; 1 → Surebet tồn tại</li>
               <li>• Stake mỗi cửa = (1/odds) / tổng × vốn</li>
               <li>• VD: odds 2.10 + 2.05 → lãi ~3.7%</li>
+              <li>• <span className="text-blue-400">⚠️ Nên dùng số chẵn (10K/50K/100K) để tránh bị nhà cái flag/block tài khoản</span></li>
             </ul>
           </CardContent>
         </Card>

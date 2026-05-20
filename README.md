@@ -19,10 +19,13 @@ Arbitrage betting exploits odds differences between bookmakers. When the total i
 ## Features
 
 - 🔍 **Surebet Scanner** — Realtime scan across 50+ bookmakers
+- 🧠 **AI O/U Analyzer** — Detect odds discrepancies in Over/Under markets with AI insights
 - 🧮 **Calculator** — Manual 2-way / 3-way arbitrage calculator
 - 📊 **Multi-source odds** — TheOddsAPI (1xBet, Pinnacle, etc.) + 8xBet scraper
+- 🏠 **Landing Page** — Public homepage with features, how-it-works, stats
 - 🔐 **Auth** — Login, Register, Password Reset, Profile management
-- 🌙 **Dark theme** — Clean, mobile-first UI
+- 🌙 **Dark theme** — Clean, mobile-first, responsive UI
+- ⚡ **Cache Layer** — In-memory cache with TTL (60s odds, 30s analysis, 5min AI)
 
 ## Tech Stack
 
@@ -52,10 +55,14 @@ Arbitrage betting exploits odds differences between bookmakers. When the total i
 ```
 src/
 ├── app/
-│   ├── page.tsx              # Home dashboard
+│   ├── page.tsx              # Landing page (public)
+│   ├── dashboard/            # User dashboard (auth required)
 │   ├── scanner/              # Surebet scanner (realtime)
+│   ├── ai-analyzer/          # AI O/U odds discrepancy analyzer
 │   ├── calculator/           # Manual arbitrage calculator
-│   ├── api/odds/             # Odds fetch API route
+│   ├── api/
+│   │   ├── odds/             # Surebet scan API (cached)
+│   │   └── ai-analyzer/      # O/U analysis API (cached)
 │   ├── login/                # Sign in
 │   ├── register/             # Sign up
 │   ├── forgot-password/      # Request reset link
@@ -73,6 +80,7 @@ src/
 │   ├── odds/                 # Odds providers
 │   │   ├── theoddsapi.ts     # TheOddsAPI client
 │   │   └── xbet8.ts          # 8xBet scraper
+│   ├── cache.ts              # In-memory TTL cache (oddsCache, analysisCache)
 │   ├── supabase/             # Client, Server, Middleware
 │   └── utils.ts
 └── middleware.ts              # Auth middleware
@@ -103,16 +111,19 @@ Open [http://localhost:3000](http://localhost:3000)
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-# TheOddsAPI (required for scanner)
+# TheOddsAPI (required for scanner & AI analyzer)
 # Sign up free: https://the-odds-api.com
 ODDS_API_KEY=your_odds_api_key
+
+# OpenAI (optional, for AI insights in O/U analyzer)
+OPENAI_API_KEY=your_openai_api_key
 ```
 
 ## API Endpoints
 
 ### `GET /api/odds`
 
-Scan for arbitrage opportunities.
+Scan for surebet arbitrage opportunities.
 
 **Parameters:**
 | Param        | Default | Description                          |
@@ -122,6 +133,43 @@ Scan for arbitrage opportunities.
 | `min_profit` | 0.5     | Minimum profit percentage            |
 | `total_stake`| 1000000 | Reference stake in VND               |
 | `include_8xbet` | false | Enable 8xBet scraper              |
+| `force`      | false   | Bypass cache, force fresh fetch      |
+
+**Response includes:** `cached` flag + `_cache` stats for debugging.
+
+### `GET /api/ai-analyzer`
+
+Analyze O/U odds discrepancies across bookmakers with optional AI insights.
+
+**Parameters:**
+| Param             | Default | Description                              |
+|-------------------|---------|------------------------------------------|
+| `sports`          | 10 leagues (EPL, UCL, La Liga, Serie A, Bundesliga, NBA...) | Comma-separated sport keys |
+| `min_discrepancy` | 0       | Minimum discrepancy % to include         |
+| `include_ai`      | false   | Include AI analysis (requires OPENAI_API_KEY) |
+| `force`           | false   | Bypass cache                             |
+
+**Response includes:**
+- Match-by-match O/U odds comparison
+- Implied probability analysis per bookmaker
+- Arbitrage detection (when implied prob sum < 100%)
+- Discrepancy spread ranking
+- Optional AI insights via GPT-4o-mini
+
+## Cache Layer
+
+In-memory cache with TTL (`src/lib/cache.ts`):
+
+| Cache              | TTL    | Purpose                                  |
+|--------------------|--------|------------------------------------------|
+| `oddsCache`        | 60s    | Raw odds from TheOddsAPI / 8xBet         |
+| `analysisCache`    | 30s    | Computed O/U discrepancy analysis        |
+| AI insights        | 5min   | GPT-4o-mini responses (inside oddsCache) |
+
+- Both `/api/odds` and `/api/ai-analyzer` share the same `oddsCache`
+- If scanner already fetched odds, AI analyzer reuses cached data
+- Add `?force=true` to any API call to bypass cache
+- Note: In-memory cache resets on server restart/redeploy. For production, consider Upstash Redis
 
 ## How Arbitrage Detection Works
 

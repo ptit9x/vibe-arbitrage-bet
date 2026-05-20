@@ -6,14 +6,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   ArrowLeft,
@@ -22,6 +14,7 @@ import {
   Mail,
   Save,
   User,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -86,44 +79,62 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <p className="text-sm text-muted-foreground">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center bg-gray-950">
+        <Zap className="h-6 w-6 text-emerald-400 animate-pulse" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-8">
-      <Card className="w-full max-w-md shadow-lg">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 text-2xl font-bold text-blue-700">
-            {user?.email?.charAt(0).toUpperCase() || "?"}
+    <div className="relative flex min-h-screen items-center justify-center bg-gray-950 px-4 py-8 overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[600px] rounded-full bg-emerald-500/6 blur-[120px]" />
+      </div>
+
+      <div className="relative z-10 w-full max-w-md">
+        <Link
+          href="/dashboard"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm text-gray-400 transition-colors hover:text-white"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to dashboard
+        </Link>
+
+        <div className="rounded-2xl border border-white/10 bg-gray-900/80 p-6 sm:p-8 backdrop-blur-sm shadow-2xl">
+          {/* Avatar + header */}
+          <div className="mb-6 text-center">
+            <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-600 text-2xl font-bold text-white ring-2 ring-emerald-500/30 ring-offset-2 ring-offset-gray-900">
+              {user?.email?.charAt(0).toUpperCase() || "?"}
+            </div>
+            <h1 className="text-xl font-bold text-white">Profile</h1>
+            <p className="mt-1 text-xs text-gray-400">
+              Member since{" "}
+              {user?.created_at
+                ? new Date(user.created_at).toLocaleDateString("vi-VN", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })
+                : "N/A"}
+            </p>
           </div>
-          <CardTitle className="text-3xl font-bold tracking-tight">
-            ⚡ Arbitrage Bet
-          </CardTitle>
-          <CardDescription>Your profile</CardDescription>
-        </CardHeader>
 
-        <Separator />
-
-        <form onSubmit={handleUpdateProfile}>
-          <CardContent className="space-y-4 pt-6">
+          <form onSubmit={handleUpdateProfile} className="space-y-4">
             {error && (
-              <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
-                {error}
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+                ❌ {error}
               </div>
             )}
 
             {success && (
-              <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">
-                ✅ Profile updated successfully!
+              <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-400">
+                ✅ Profile updated!
               </div>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
+              <Label htmlFor="email" className="text-sm text-gray-300 flex items-center gap-2">
+                <Mail className="h-3.5 w-3.5" />
                 Email
               </Label>
               <Input
@@ -131,16 +142,13 @@ export default function ProfilePage() {
                 type="email"
                 value={user?.email || ""}
                 disabled
-                className="bg-muted"
+                className="border-white/5 bg-gray-800/50 text-gray-500 cursor-not-allowed"
               />
-              <p className="text-xs text-muted-foreground">
-                Email cannot be changed
-              </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="displayName" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
+              <Label htmlFor="displayName" className="text-sm text-gray-300 flex items-center gap-2">
+                <User className="h-3.5 w-3.5" />
                 Display Name
               </Label>
               <Input
@@ -150,65 +158,53 @@ export default function ProfilePage() {
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="Enter your name"
                 autoComplete="name"
+                className="border-white/10 bg-gray-800 text-white placeholder:text-gray-500 focus:border-emerald-500/50"
               />
             </div>
 
-            <div className="rounded-lg border bg-muted/50 p-3">
-              <p className="text-xs text-muted-foreground">
-                Member since{" "}
-                {user?.created_at
-                  ? new Date(user.created_at).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })
-                  : "N/A"}
-              </p>
-            </div>
-          </CardContent>
-
-          <CardFooter className="flex flex-col gap-3">
-            <Button type="submit" className="w-full gap-2" disabled={saving}>
-              <Save className="h-4 w-4" />
-              {saving ? "Saving..." : "Save Changes"}
+            <Button
+              type="submit"
+              disabled={saving}
+              className="w-full bg-emerald-600 py-2.5 text-sm font-bold text-white hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-600/25"
+            >
+              {saving ? (
+                <span className="flex items-center gap-2">
+                  <Zap className="h-4 w-4 animate-pulse" />
+                  Saving...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Save className="h-4 w-4" />
+                  Save Changes
+                </span>
+              )}
             </Button>
+          </form>
 
-            <Link href="/change-password" className="w-full">
+          <Separator className="my-6 bg-white/10" />
+
+          <div className="space-y-2">
+            <Link href="/change-password" className="block">
               <Button
-                type="button"
                 variant="outline"
-                className="w-full gap-2"
+                className="w-full gap-2 border-white/10 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white"
               >
                 <KeyRound className="h-4 w-4" />
                 Change Password
               </Button>
             </Link>
 
-            <Separator className="my-1" />
-
-            <Link href="/" className="w-full">
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Home
-              </Button>
-            </Link>
-
             <Button
-              type="button"
               variant="ghost"
-              className="w-full gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="w-full gap-2 text-red-400 hover:text-red-300 hover:bg-red-500/10"
               onClick={handleLogout}
             >
               <LogOut className="h-4 w-4" />
               Sign Out
             </Button>
-          </CardFooter>
-        </form>
-      </Card>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

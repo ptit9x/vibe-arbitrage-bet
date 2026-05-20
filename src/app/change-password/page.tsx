@@ -6,17 +6,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, KeyRound, ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import { ArrowLeft, KeyRound, Lock, Shield, ShieldCheck, Eye, EyeOff, Zap } from "lucide-react";
 
 export default function ChangePasswordPage() {
   const router = useRouter();
@@ -50,7 +41,6 @@ export default function ChangePasswordPage() {
 
     setLoading(true);
 
-    // Re-authenticate to verify current password
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user?.email) {
       setError("Unable to verify identity. Please sign in again.");
@@ -69,7 +59,6 @@ export default function ChangePasswordPage() {
       return;
     }
 
-    // Update password
     const { error: updateError } = await supabase.auth.updateUser({
       password: newPassword,
     });
@@ -88,105 +77,142 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
-      <Card className="w-full max-w-md shadow-lg">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-2xl">
-            <KeyRound className="h-7 w-7 text-amber-600" />
-          </div>
-          <CardTitle className="text-3xl font-bold tracking-tight">
-            ⚡ Arbitrage Bet
-          </CardTitle>
-          <CardDescription>Change your password</CardDescription>
-        </CardHeader>
+    <div className="relative flex min-h-screen items-center justify-center bg-gray-950 px-4 overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[600px] rounded-full bg-amber-500/6 blur-[120px]" />
+      </div>
 
-        <Separator />
+      <div className="relative z-10 w-full max-w-md">
+        <Link
+          href="/profile"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm text-gray-400 transition-colors hover:text-white"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to profile
+        </Link>
 
-        {success ? (
-          <CardContent className="space-y-4 pt-6">
-            <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-center">
-              <ShieldCheck className="mx-auto mb-2 h-8 w-8 text-green-600" />
-              <p className="text-sm font-medium text-green-800">
-                Password updated successfully!
-              </p>
-              <p className="mt-1 text-sm text-green-700">
-                Your password has been changed. Use the new password next time
-                you sign in.
-              </p>
+        <div className="rounded-2xl border border-white/10 bg-gray-900/80 p-6 sm:p-8 backdrop-blur-sm shadow-2xl">
+          <div className="mb-6 text-center">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10">
+              <KeyRound className="h-6 w-6 text-amber-400" />
             </div>
-            <Link href="/profile" className="block">
-              <Button variant="outline" className="w-full gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Profile
-              </Button>
-            </Link>
-          </CardContent>
-        ) : (
-          <form onSubmit={handleChangePassword}>
-            <CardContent className="space-y-4 pt-6">
+            <h1 className="text-xl font-bold text-white">Change Password</h1>
+            <p className="mt-1 text-sm text-gray-400">
+              Update your account password
+            </p>
+          </div>
+
+          {success ? (
+            <div className="space-y-4">
+              <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-center">
+                <ShieldCheck className="mx-auto mb-2 h-8 w-8 text-emerald-400" />
+                <p className="text-sm font-medium text-emerald-300">
+                  Password updated!
+                </p>
+                <p className="mt-1 text-xs text-gray-400">
+                  Use your new password next time you sign in.
+                </p>
+              </div>
+              <Link href="/profile">
+                <Button className="w-full bg-emerald-600 text-white font-bold hover:bg-emerald-500">
+                  Back to Profile
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <form onSubmit={handleChangePassword} className="space-y-4">
               {error && (
-                <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
-                  {error}
+                <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+                  ❌ {error}
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="currentPassword">Current Password</Label>
-                <Input
-                  id="currentPassword"
-                  type="password"
-                  required
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                />
+                <Label htmlFor="currentPassword" className="text-sm text-gray-300">
+                  Current Password
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                  <Input
+                    id="currentPassword"
+                    type="password"
+                    required
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    className="border-white/10 bg-gray-800 pl-10 text-white placeholder:text-gray-500 focus:border-emerald-500/50"
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="newPassword">New Password</Label>
-                <Input
-                  id="newPassword"
-                  type="password"
-                  required
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="••••••••"
-                  autoComplete="new-password"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Must be at least 6 characters
-                </p>
+                <Label htmlFor="newPassword" className="text-sm text-gray-300">
+                  New Password
+                </Label>
+                <div className="relative">
+                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    required
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete="new-password"
+                    className="border-white/10 bg-gray-800 pl-10 text-white placeholder:text-gray-500 focus:border-emerald-500/50"
+                  />
+                </div>
+                <p className="text-[10px] text-gray-500">At least 6 characters</p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="••••••••"
-                  autoComplete="new-password"
-                />
+                <Label htmlFor="confirmPassword" className="text-sm text-gray-300">
+                  Confirm New Password
+                </Label>
+                <div className="relative">
+                  <Shield className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete="new-password"
+                    className="border-white/10 bg-gray-800 pl-10 text-white placeholder:text-gray-500 focus:border-emerald-500/50"
+                  />
+                </div>
               </div>
-            </CardContent>
 
-            <CardFooter className="flex flex-col gap-3">
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Updating..." : "Update Password"}
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-emerald-600 py-2.5 text-sm font-bold text-white hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-600/25"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <Zap className="h-4 w-4 animate-pulse" />
+                    Updating...
+                  </span>
+                ) : (
+                  "Update Password"
+                )}
               </Button>
-              <Link href="/profile" className="w-full">
-                <Button type="button" variant="ghost" className="w-full gap-2">
-                  <ArrowLeft className="h-4 w-4" />
+
+              <Link href="/profile" className="block">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full text-gray-400 hover:text-white"
+                >
                   Cancel
                 </Button>
               </Link>
-            </CardFooter>
-          </form>
-        )}
-      </Card>
+            </form>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
