@@ -19,7 +19,7 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-gray-950/95 backdrop-blur-xl safe-area-bottom">
-      <div className="mx-auto grid max-w-lg grid-cols-6 px-1 py-1">
+      <div className="mx-auto grid max-w-lg grid-cols-6 gap-1 px-2 py-2">
         {navItems.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -28,27 +28,22 @@ export default function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-0.5 rounded-lg py-2 text-[10px] font-medium transition-all ${
+              className={`flex flex-col items-center gap-1 rounded-xl py-2.5 text-xs font-semibold transition-all ${
                 isActive
-                  ? "text-emerald-400"
-                  : "text-gray-500 hover:text-gray-300"
+                  ? "text-emerald-400 bg-emerald-400/10"
+                  : "text-gray-400 hover:text-gray-200 hover:bg-white/5"
               }`}
             >
-              <item.icon
-                className={`h-5 w-5 ${isActive ? "text-emerald-400" : ""}`}
-              />
+              <item.icon className={`h-6 w-6 ${isActive ? "text-emerald-400" : ""}`} />
               <span>{t.nav[item.labelKey]}</span>
-              {isActive && (
-                <div className="absolute bottom-1 h-1 w-1 rounded-full bg-emerald-400" />
-              )}
             </Link>
           );
         })}
         <button
           onClick={() => setLocale(locale === "vi" ? "en" : "vi")}
-          className="flex flex-col items-center gap-0.5 rounded-lg py-2 text-[10px] font-medium text-gray-500 hover:text-gray-300 transition-all"
+          className="flex flex-col items-center gap-1 rounded-xl py-2.5 text-xs font-semibold text-gray-400 hover:text-gray-200 hover:bg-white/5 transition-all"
         >
-          <Globe className="h-5 w-5" />
+          <Globe className="h-6 w-6" />
           <span>{locale === "vi" ? "EN" : "VI"}</span>
         </button>
       </div>
