@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import BottomNav from "@/components/bottom-nav";
+import Link from "next/link";
 import {
   Brain,
   TrendingUp,
@@ -22,6 +24,8 @@ import {
   BarChart3,
   Zap,
   Info,
+  HelpCircle,
+  AlertCircle,
 } from "lucide-react";
 
 interface OUAnalysis {
@@ -94,6 +98,7 @@ export default function AIAnalyzerPage() {
   const [filter, setFilter] = useState<"all" | "arbitrage" | "discrepancy">("all");
   const [minDiscrepancy, setMinDiscrepancy] = useState(0);
   const [aiInsights, setAiInsights] = useState<Map<string, string>>(new Map());
+  const [showHelp, setShowHelp] = useState(false);
   const [loadingAi, setLoadingAi] = useState<string | null>(null);
 
   const checkAuth = useCallback(async () => {
@@ -190,34 +195,48 @@ export default function AIAnalyzerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+    <div className="min-h-screen bg-gray-950 pb-20">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 px-4 py-4 text-white shadow-lg">
         <div className="mx-auto max-w-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white/10 -ml-2"
+              <button
                 onClick={() => router.push("/dashboard")}
+                className="text-white hover:bg-white/10 rounded-lg p-1 -ml-1"
               >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
+                <ArrowLeft className="h-5 w-5" />
+              </button>
               <div>
                 <h1 className="text-xl font-bold flex items-center gap-2">
                   <Brain className="h-5 w-5" />
                   AI Analyzer
                 </h1>
                 <p className="text-xs text-purple-200">
-                  Phân tích chênh lệch kèo Tài/Xỉu bằng AI
+                  Phân tích chênh lệch kèo Tài/Xỉu
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-purple-200" />
-            </div>
+            <button
+              onClick={() => setShowHelp(!showHelp)}
+              className={`rounded-lg p-2 transition-colors ${showHelp ? "bg-white/20" : "hover:bg-white/10"}`}
+            >
+              <HelpCircle className="h-5 w-5" />
+            </button>
           </div>
+
+          {/* Help panel */}
+          {showHelp && (
+            <div className="mt-3 rounded-xl bg-white/10 border border-white/20 p-3 space-y-2">
+              <p className="text-xs font-bold text-white">📌 Hướng dẫn nhanh:</p>
+              <div className="space-y-1 text-xs text-purple-100">
+                <p>1. Nhấn <strong>Phân tích AI</strong> để quét kèo Tài/Xỉu</p>
+                <p>2. Nhấn vào trận đấu để xem chi tiết chênh lệch odds</p>
+                <p>3. Nhấn <strong>Phân tích bằng AI</strong> để lấy khuyến nghị</p>
+                <p>4. 🟢 <strong>Surebet</strong> = tổng xác suất &lt; 100% → luôn có lãi!</p>
+              </div>
+            </div>
+          )}
 
           {/* Controls */}
           <div className="mt-3 flex items-end gap-3">
@@ -368,7 +387,7 @@ export default function AIAnalyzerPage() {
 
         {/* No results */}
         {data && filteredAnalyses.length === 0 && (
-          <Card className="border-gray-700 bg-gray-800">
+          <Card className="border-white/5 bg-gray-900">
             <CardContent className="py-8 text-center">
               <p className="text-4xl">🔍</p>
               <p className="mt-2 font-medium text-gray-300">
@@ -377,6 +396,10 @@ export default function AIAnalyzerPage() {
               <p className="mt-1 text-sm text-gray-500">
                 Thử giảm min chênh lệch hoặc đổi bộ lọc
               </p>
+              <div className="mt-4 space-y-1 text-xs text-gray-600">
+                <p>💡 Thử giảm min spread xuống 0%</p>
+                <p>💡 Chuyển sang tab "Tất cả" để xem toàn bộ</p>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -392,13 +415,13 @@ export default function AIAnalyzerPage() {
           return (
             <Card
               key={key}
-              className={`mb-3 border-gray-700 bg-gray-800 overflow-hidden transition-all ${
+              className={`mb-3 border-white/5 bg-gray-900 overflow-hidden transition-all ${
                 analysis.discrepancy.isArbitrage ? "ring-1 ring-emerald-500/30" : ""
               }`}
             >
               {/* Match header */}
               <button
-                className="w-full text-left px-4 py-3 hover:bg-gray-750 transition-colors"
+                className="w-full text-left px-4 py-3 hover:bg-white/5 transition-colors"
                 onClick={() => setExpandedId(isExpanded ? null : key)}
               >
                 <div className="flex items-center justify-between">
@@ -456,9 +479,9 @@ export default function AIAnalyzerPage() {
 
               {/* Expanded content */}
               {isExpanded && (
-                <div className="border-t border-gray-700">
+                <div className="border-t border-white/5">
                   {/* Best odds highlight */}
-                  <div className="grid grid-cols-2 gap-2 p-4 bg-gray-850">
+                  <div className="grid grid-cols-2 gap-2 p-4 bg-gray-900/50">
                     <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3">
                       <div className="flex items-center gap-1 mb-1">
                         <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
@@ -490,7 +513,7 @@ export default function AIAnalyzerPage() {
                   </div>
 
                   {/* Implied probability analysis */}
-                  <div className="px-4 py-3 border-t border-gray-700">
+                  <div className="px-4 py-3 border-t border-white/5">
                     <div className="flex items-center gap-2 mb-2">
                       <BarChart3 className="h-3.5 w-3.5 text-purple-400" />
                       <span className="text-xs font-medium text-purple-400">
@@ -555,7 +578,7 @@ export default function AIAnalyzerPage() {
                   </div>
 
                   {/* All bookmaker odds table */}
-                  <div className="px-4 py-3 border-t border-gray-700">
+                  <div className="px-4 py-3 border-t border-white/5">
                     <p className="text-xs font-medium text-gray-400 mb-2">
                       So sánh odds tất cả nhà cái ({analysis.bookmakerOdds.length})
                     </p>
@@ -598,7 +621,7 @@ export default function AIAnalyzerPage() {
                   </div>
 
                   {/* AI Insight */}
-                  <div className="px-4 py-3 border-t border-gray-700">
+                  <div className="px-4 py-3 border-t border-white/5">
                     {aiInsights.has(key) ? (
                       <div>
                         <div className="flex items-center gap-1.5 mb-2">
@@ -635,7 +658,7 @@ export default function AIAnalyzerPage() {
                   </div>
 
                   {/* Match time */}
-                  <div className="px-4 py-2 border-t border-gray-700 bg-gray-900/50">
+                  <div className="px-4 py-2 border-t border-white/5 bg-gray-950/50">
                     <p className="text-[10px] text-gray-500 flex items-center gap-1">
                       <Info className="h-3 w-3" />
                       Kick-off: {formatTime(analysis.match.commenceTime)}
@@ -649,11 +672,14 @@ export default function AIAnalyzerPage() {
 
         {/* Scan timestamp */}
         {data && (
-          <p className="mt-4 text-center text-[10px] text-gray-600">
-            Quét lúc: {new Date(data.scannedAt).toLocaleString("vi-VN")}
-          </p>
+          <div className="mt-4 text-center text-[10px] text-gray-600">
+            <p>Quét lúc: {new Date(data.scannedAt).toLocaleString("vi-VN")} • Cache: 30 giây</p>
+            <Link href="/guide" className="text-gray-500 hover:text-gray-400">Xem hướng dẫn chi tiết →</Link>
+          </div>
         )}
       </div>
+
+      <BottomNav />
     </div>
   );
 }
