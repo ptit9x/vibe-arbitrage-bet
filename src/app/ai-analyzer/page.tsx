@@ -283,7 +283,7 @@ export default function AIAnalyzerPage() {
               <button
                 key={tab.key}
                 onClick={() => setFilter(tab.key)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
                   filter === tab.key
                     ? "bg-white/20 text-white"
                     : "text-purple-200 hover:bg-white/10"
@@ -315,15 +315,15 @@ export default function AIAnalyzerPage() {
           <div className="mb-4 grid grid-cols-4 gap-2">
             <div className="rounded-xl bg-gray-800 p-3 text-center">
               <p className="text-lg font-bold text-white">{data.totalMatches}</p>
-              <p className="text-[10px] text-gray-400">{t.aiAnalyzer.statMatches}</p>
+              <p className="text-sm text-gray-400">{t.aiAnalyzer.statMatches}</p>
             </div>
             <div className="rounded-xl bg-gray-800 p-3 text-center">
               <p className="text-lg font-bold text-purple-400">{data.analysesCount}</p>
-              <p className="text-[10px] text-gray-400">{t.aiAnalyzer.statOU}</p>
+              <p className="text-sm text-gray-400">{t.aiAnalyzer.statOU}</p>
             </div>
             <div className="rounded-xl bg-gray-800 p-3 text-center">
               <p className="text-lg font-bold text-emerald-400">{data.arbitrageCount}</p>
-              <p className="text-[10px] text-gray-400">{t.aiAnalyzer.statSurebet}</p>
+              <p className="text-sm text-gray-400">{t.aiAnalyzer.statSurebet}</p>
             </div>
             <div className="rounded-xl bg-gray-800 p-3 text-center">
               <p className="text-lg font-bold text-yellow-400">
@@ -331,7 +331,7 @@ export default function AIAnalyzerPage() {
                   ? `${(Math.max(...data.analyses.map((a) => a.discrepancy.spread)) * 100).toFixed(1)}%`
                   : "0%"}
               </p>
-              <p className="text-[10px] text-gray-400">{t.aiAnalyzer.statMaxSpread}</p>
+              <p className="text-sm text-gray-400">{t.aiAnalyzer.statMaxSpread}</p>
             </div>
           </div>
         )}
@@ -375,7 +375,7 @@ export default function AIAnalyzerPage() {
           <div className="py-16 text-center">
             <RefreshCw className="h-10 w-10 text-purple-400 animate-spin mx-auto" />
             <p className="mt-4 text-gray-400">{t.aiAnalyzer.scanningMsg}</p>
-            <p className="mt-1 text-xs text-gray-500">{t.aiAnalyzer.scanningTime}</p>
+            <p className="mt-1 text-sm text-gray-500">{t.aiAnalyzer.scanningTime}</p>
           </div>
         )}
 
@@ -422,7 +422,7 @@ export default function AIAnalyzerPage() {
                         {analysis.match.homeTeam} vs {analysis.match.awayTeam}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs text-gray-400">{sportName}</span>
+                        <span className="text-sm text-gray-400">{sportName}</span>
                         <span className="text-xs text-gray-600">•</span>
                         <span className="text-xs text-yellow-400 font-medium">
                           O/U {analysis.line}
@@ -433,7 +433,7 @@ export default function AIAnalyzerPage() {
 
                   <div className="flex items-center gap-3 shrink-0 ml-3">
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${risk.bg} ${risk.color}`}
+                      className={`text-sm font-bold px-2 py-0.5 rounded-full border ${risk.bg} ${risk.color}`}
                     >
                       {risk.label}
                     </span>
@@ -444,14 +444,14 @@ export default function AIAnalyzerPage() {
                           <p className="text-sm font-bold text-emerald-400">
                             +{analysis.discrepancy.arbitrageProfit?.toFixed(2)}%
                           </p>
-                          <p className="text-[10px] text-gray-400">{t.common.surebet}</p>
+                          <p className="text-sm text-gray-400">{t.common.surebet}</p>
                         </>
                       ) : (
                         <>
                           <p className="text-sm font-bold text-yellow-400">
                             {(analysis.discrepancy.spread * 100).toFixed(1)}%
                           </p>
-                          <p className="text-[10px] text-gray-400">Spread</p>
+                          <p className="text-sm text-gray-400">Spread</p>
                         </>
                       )}
                     </div>
@@ -473,14 +473,14 @@ export default function AIAnalyzerPage() {
                     <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3">
                       <div className="flex items-center gap-1 mb-1">
                         <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
-                        <span className="text-[10px] font-medium text-emerald-400">
+                        <span className="text-sm font-medium text-emerald-400">
                           {t.aiAnalyzer.bestOver}
                         </span>
                       </div>
                       <p className="text-xl font-bold text-white">
                         {analysis.discrepancy.maxOverOdds.value.toFixed(2)}
                       </p>
-                      <p className="text-[10px] text-gray-400 truncate">
+                      <p className="text-sm text-gray-400 truncate">
                         {getBookmakerUrl(analysis.discrepancy.maxOverOdds.bookmaker) ? (
                           <a
                             href={getBookmakerUrl(analysis.discrepancy.maxOverOdds.bookmaker)!}
@@ -499,14 +499,14 @@ export default function AIAnalyzerPage() {
                     <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 p-3">
                       <div className="flex items-center gap-1 mb-1">
                         <TrendingDown className="h-3.5 w-3.5 text-blue-400" />
-                        <span className="text-[10px] font-medium text-blue-400">
+                        <span className="text-sm font-medium text-blue-400">
                           {t.aiAnalyzer.bestUnder}
                         </span>
                       </div>
                       <p className="text-xl font-bold text-white">
                         {analysis.discrepancy.maxUnderOdds.value.toFixed(2)}
                       </p>
-                      <p className="text-[10px] text-gray-400 truncate">
+                      <p className="text-sm text-gray-400 truncate">
                         {getBookmakerUrl(analysis.discrepancy.maxUnderOdds.bookmaker) ? (
                           <a
                             href={getBookmakerUrl(analysis.discrepancy.maxUnderOdds.bookmaker)!}
@@ -528,25 +528,25 @@ export default function AIAnalyzerPage() {
                   <div className="px-4 py-3 border-t border-white/5">
                     <div className="flex items-center gap-2 mb-2">
                       <BarChart3 className="h-3.5 w-3.5 text-purple-400" />
-                      <span className="text-xs font-medium text-purple-400">
+                      <span className="text-sm font-medium text-purple-400">
                         {t.aiAnalyzer.impliedAnalysis}
                       </span>
                     </div>
                     <div className="grid grid-cols-3 gap-2 text-center">
                       <div>
-                        <p className="text-xs text-gray-400">Over Implied</p>
+                        <p className="text-sm text-gray-400">Over Implied</p>
                         <p className="text-sm font-mono font-bold text-white">
                           {(1 / analysis.discrepancy.maxOverOdds.value * 100).toFixed(1)}%
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">Under Implied</p>
+                        <p className="text-sm text-gray-400">Under Implied</p>
                         <p className="text-sm font-mono font-bold text-white">
                           {(1 / analysis.discrepancy.maxUnderOdds.value * 100).toFixed(1)}%
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">{t.aiAnalyzer.total}</p>
+                        <p className="text-sm text-gray-400">{t.aiAnalyzer.total}</p>
                         <p
                           className={`text-sm font-mono font-bold ${
                             analysis.discrepancy.impliedProbSum < 1
@@ -573,7 +573,7 @@ export default function AIAnalyzerPage() {
                           }}
                         />
                       </div>
-                      <p className="text-[10px] text-gray-500 mt-1 flex items-center gap-1">
+                      <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
                         {analysis.discrepancy.impliedProbSum < 1 ? (
                           <>
                             <CheckCircle2 className="h-3 w-3 text-emerald-400" />
@@ -591,11 +591,11 @@ export default function AIAnalyzerPage() {
 
                   {/* All bookmaker odds table */}
                   <div className="px-4 py-3 border-t border-white/5">
-                    <p className="text-xs font-medium text-gray-400 mb-2">
+                    <p className="text-sm font-medium text-gray-400 mb-2">
                       {t.aiAnalyzer.oddsComparison.replace("{count}", String(analysis.bookmakerOdds.length))}
                     </p>
                     <div className="space-y-1">
-                      <div className="grid grid-cols-[1fr_60px_60px] gap-1 text-[10px] text-gray-500 px-2">
+                      <div className="grid grid-cols-[1fr_60px_60px] gap-1 text-sm text-gray-500 px-2">
                         <span>{t.aiAnalyzer.bookmakerCol}</span>
                         <span className="text-center">{t.aiAnalyzer.overCol}</span>
                         <span className="text-center">{t.aiAnalyzer.underCol}</span>
@@ -610,13 +610,13 @@ export default function AIAnalyzerPage() {
                               href={getBookmakerUrl(bk.bookmaker, bk.bookmakerTitle)!}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-gray-300 hover:text-blue-400 transition-colors text-[11px]"
+                              className="text-gray-300 hover:text-blue-400 transition-colors text-sm"
                               onClick={(e) => e.stopPropagation()}
                             >
                               {bk.bookmakerTitle} ↗
                             </a>
                           ) : (
-                            <span className="text-gray-300 text-[11px]">
+                            <span className="text-gray-300 text-sm">
                               {bk.bookmakerTitle}
                             </span>
                           )}
@@ -649,11 +649,11 @@ export default function AIAnalyzerPage() {
                       <div>
                         <div className="flex items-center gap-1.5 mb-2">
                           <Sparkles className="h-3.5 w-3.5 text-purple-400" />
-                          <span className="text-xs font-medium text-purple-400">
+                          <span className="text-sm font-medium text-purple-400">
                             {t.aiAnalyzer.aiInsight}
                           </span>
                         </div>
-                        <div className="rounded-lg bg-purple-500/10 border border-purple-500/20 p-3 text-xs text-gray-300 whitespace-pre-wrap leading-relaxed">
+                        <div className="rounded-lg bg-purple-500/10 border border-purple-500/20 p-3 text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">
                           {aiInsights.get(key)}
                         </div>
                       </div>
@@ -682,7 +682,7 @@ export default function AIAnalyzerPage() {
 
                   {/* Match time */}
                   <div className="px-4 py-2 border-t border-white/5 bg-gray-950/50">
-                    <p className="text-[10px] text-gray-500 flex items-center gap-1">
+                    <p className="text-sm text-gray-500 flex items-center gap-1">
                       <Info className="h-3 w-3" />
                       {t.aiAnalyzer.kickoff} {formatTime(analysis.match.commenceTime)}
                     </p>

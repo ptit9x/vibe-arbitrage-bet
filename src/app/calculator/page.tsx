@@ -179,7 +179,7 @@ export default function CalculatorPage() {
           {/* Help panel */}
           {showHelp && (
             <div className="mt-3 rounded-xl bg-white/10 border border-white/20 p-3 space-y-2">
-              <p className="text-xs font-bold text-white">{t.calculator.helpTitle}</p>
+              <p className="text-sm font-bold text-white">{t.calculator.helpTitle}</p>
               <div className="space-y-1 text-xs text-blue-100">
                 <p>{t.calculator.help1}</p>
                 <p>{t.calculator.help2}</p>
@@ -200,14 +200,14 @@ export default function CalculatorPage() {
         <div className="flex gap-2">
           <button
             onClick={() => loadExample("2way")}
-            className="flex-1 rounded-xl border border-white/5 bg-gray-900/50 p-2.5 text-center text-xs text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            className="flex-1 rounded-xl border border-white/5 bg-gray-900/50 p-2.5 text-center text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
           >
             <span className="block text-base mb-0.5">⚽</span>
             {t.calculator.example2way}
           </button>
           <button
             onClick={() => loadExample("3way")}
-            className="flex-1 rounded-xl border border-white/5 bg-gray-900/50 p-2.5 text-center text-xs text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            className="flex-1 rounded-xl border border-white/5 bg-gray-900/50 p-2.5 text-center text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
           >
             <span className="block text-base mb-0.5">🏆</span>
             {t.calculator.example3way}
@@ -221,7 +221,7 @@ export default function CalculatorPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
-              <label className="text-xs text-gray-400">{t.calculator.odds1Label}</label>
+              <label className="text-sm text-gray-400">{t.calculator.odds1Label}</label>
               <Input
                 type="number"
                 step="0.01"
@@ -232,7 +232,7 @@ export default function CalculatorPage() {
               />
             </div>
             <div>
-              <label className="text-xs text-gray-400">{t.calculator.odds2Label}</label>
+              <label className="text-sm text-gray-400">{t.calculator.odds2Label}</label>
               <Input
                 type="number"
                 step="0.01"
@@ -243,7 +243,7 @@ export default function CalculatorPage() {
               />
             </div>
             <div>
-              <label className="text-xs text-gray-400">
+              <label className="text-sm text-gray-400">
                 {t.calculator.odds3Label} <span className="text-gray-600">{t.calculator.odds3Optional}</span>
               </label>
               <Input
@@ -256,7 +256,7 @@ export default function CalculatorPage() {
               />
             </div>
             <div>
-              <label className="text-xs text-gray-400">{t.calculator.totalCapital}</label>
+              <label className="text-sm text-gray-400">{t.calculator.totalCapital}</label>
               <Input
                 type="number"
                 value={totalStake}
@@ -265,7 +265,7 @@ export default function CalculatorPage() {
               />
             </div>
             <div>
-              <label className="text-xs text-gray-400 mb-2 block">
+              <label className="text-sm text-gray-400 mb-2 block">
                 {t.calculator.roundingLabel}
                 <span className="text-gray-600 ml-1">{t.calculator.roundingNote}</span>
               </label>
@@ -340,7 +340,7 @@ export default function CalculatorPage() {
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-sm font-medium text-white">{t.calculator.leg} {i + 1}</p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-sm text-gray-500">
                               {t.common.odds}: <span className="text-yellow-400">{parseFloat(odds[i]).toFixed(2)}</span>
                             </p>
                           </div>
@@ -349,11 +349,11 @@ export default function CalculatorPage() {
                               {formatMoney(rStake)}đ
                             </p>
                             {isDifferent && (
-                              <p className="text-xs text-gray-600 line-through">
+                              <p className="text-sm text-gray-600 line-through">
                                 {t.calculator.exact} {formatMoney(exactStake)}đ
                               </p>
                             )}
-                            <p className="text-xs text-emerald-400">
+                            <p className="text-sm text-emerald-400">
                               {t.calculator.receive} {formatMoney(result.roundedPayouts[i])}đ
                             </p>
                           </div>
@@ -374,7 +374,7 @@ export default function CalculatorPage() {
 
                   {result.roundMode !== "none" && (
                     <div className="rounded-lg bg-blue-500/5 border border-blue-500/10 p-2.5">
-                      <p className="text-xs text-blue-400 flex items-center gap-1">
+                      <p className="text-sm text-blue-400 flex items-center gap-1">
                         <Lightbulb className="h-3 w-3" />
                         {t.calculator.roundTip}
                       </p>
@@ -420,7 +420,7 @@ export default function CalculatorPage() {
             <div className="mt-3 pt-3 border-t border-white/5">
               <Link
                 href="/guide"
-                className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
+                className="text-sm text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
               >
                 {t.common.viewGuide}
               </Link>

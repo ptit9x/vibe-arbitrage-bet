@@ -123,7 +123,7 @@ export default function ScannerPage() {
                   <Search className="h-5 w-5" />
                   {t.scanner.title}
                 </h1>
-                <p className="text-xs text-emerald-100">
+                <p className="text-sm text-emerald-100">
                   {lastScan
                     ? t.scanner.subtitleScanned
                         .replace("{time}", new Date(lastScan).toLocaleTimeString(locale === "vi" ? "vi-VN" : "en-US"))
@@ -144,16 +144,16 @@ export default function ScannerPage() {
 
           {/* Help panel */}
           {showHelp && (
-            <div className="mt-3 rounded-xl bg-white/10 border border-white/20 p-3 space-y-2">
-              <p className="text-xs font-bold text-white">{t.scanner.helpTitle}</p>
-              <div className="space-y-1 text-xs text-emerald-100">
+            <div className="mt-3 rounded-xl bg-white/10 border border-white/20 p-4 space-y-2">
+              <p className="text-sm font-bold text-white">{t.scanner.helpTitle}</p>
+              <div className="space-y-1.5 text-sm text-emerald-100">
                 <p dangerouslySetInnerHTML={{ __html: t.scanner.help1 }} />
                 <p dangerouslySetInnerHTML={{ __html: t.scanner.help2 }} />
                 <p>{t.scanner.help3}</p>
                 <p dangerouslySetInnerHTML={{ __html: t.scanner.help4 }} />
               </div>
-              <div className="flex items-center gap-1 text-xs text-yellow-200">
-                <AlertCircle className="h-3 w-3" />
+              <div className="flex items-center gap-1 text-sm text-yellow-200">
+                <AlertCircle className="h-4 w-4" />
                 {t.scanner.helpWarning}
               </div>
             </div>
@@ -162,38 +162,38 @@ export default function ScannerPage() {
           {/* Controls */}
           <div className="mt-3 flex items-end gap-2">
             <div className="flex-1 min-w-0">
-              <label className="text-[10px] text-emerald-200">{t.scanner.capitalLabel}</label>
+              <label className="text-sm text-emerald-200">{t.scanner.capitalLabel}</label>
               <Input
                 type="number"
                 value={totalStake}
                 onChange={(e) => setTotalStake(Number(e.target.value))}
-                className="mt-0.5 h-8 border-white/20 bg-white/10 text-white text-sm placeholder:text-white/50"
+                className="mt-1 h-10 border-white/20 bg-white/10 text-white text-base placeholder:text-white/50"
               />
             </div>
-            <div className="w-20">
-              <label className="text-[10px] text-emerald-200">{t.scanner.minPercentLabel}</label>
+            <div className="w-24">
+              <label className="text-sm text-emerald-200">{t.scanner.minPercentLabel}</label>
               <Input
                 type="number"
                 step="0.1"
                 value={minProfit}
                 onChange={(e) => setMinProfit(Number(e.target.value))}
-                className="mt-0.5 h-8 border-white/20 bg-white/10 text-white text-sm placeholder:text-white/50"
+                className="mt-1 h-10 border-white/20 bg-white/10 text-white text-base placeholder:text-white/50"
               />
             </div>
             <Button
               onClick={scanOdds}
               disabled={loading}
-              className="bg-white text-emerald-700 font-bold hover:bg-emerald-50 shrink-0 h-8 px-3"
+              className="bg-white text-emerald-700 font-bold hover:bg-emerald-50 shrink-0 h-10 px-4"
               size="sm"
             >
               {loading ? (
                 <>
-                  <RefreshCw className="h-3.5 w-3.5 mr-1 animate-spin" />
+                  <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
                   {t.common.scanning}
                 </>
               ) : (
                 <>
-                  <Search className="h-3.5 w-3.5 mr-1" />
+                  <Search className="h-4 w-4 mr-1" />
                   {t.scanner.scanButton}
                 </>
               )}
@@ -201,8 +201,8 @@ export default function ScannerPage() {
           </div>
 
           {/* Options */}
-          <div className="mt-2 flex items-center gap-4">
-            <label className="flex cursor-pointer items-center gap-1.5 text-xs text-emerald-100">
+          <div className="mt-2.5 flex items-center gap-4">
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-emerald-100">
               <input
                 type="checkbox"
                 checked={autoRefresh}
@@ -211,7 +211,7 @@ export default function ScannerPage() {
               />
               {t.scanner.autoLabel}
             </label>
-            <label className="flex cursor-pointer items-center gap-1.5 text-xs text-emerald-100">
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-emerald-100">
               <input
                 type="checkbox"
                 checked={include8xbet}
@@ -240,11 +240,11 @@ export default function ScannerPage() {
           <div className="mb-4 grid grid-cols-3 gap-2">
             <div className="rounded-xl bg-gray-900 border border-white/5 p-3 text-center">
               <p className="text-2xl font-bold text-white">{scannedMatches}</p>
-              <p className="text-[10px] text-gray-500">{t.scanner.matchesScanned}</p>
+              <p className="text-sm text-gray-500">{t.scanner.matchesScanned}</p>
             </div>
             <div className="rounded-xl bg-gray-900 border border-white/5 p-3 text-center">
               <p className="text-2xl font-bold text-emerald-400">{opportunities.length}</p>
-              <p className="text-[10px] text-gray-500">{t.scanner.surebetCount}</p>
+              <p className="text-sm text-gray-500">{t.scanner.surebetCount}</p>
             </div>
             <div className="rounded-xl bg-gray-900 border border-white/5 p-3 text-center">
               <p className="text-2xl font-bold text-yellow-400">
@@ -252,7 +252,7 @@ export default function ScannerPage() {
                   ? `${opportunities[0].profit_percent.toFixed(1)}%`
                   : "0%"}
               </p>
-              <p className="text-[10px] text-gray-500">{t.scanner.bestProfit}</p>
+              <p className="text-sm text-gray-500">{t.scanner.bestProfit}</p>
             </div>
           </div>
         )}
@@ -294,7 +294,7 @@ export default function ScannerPage() {
             <div className="mt-4">
               <button
                 onClick={() => router.push("/guide")}
-                className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-300 transition-colors"
               >
                 <HelpCircle className="h-3.5 w-3.5" />
                 {t.common.viewGuide}
@@ -308,7 +308,7 @@ export default function ScannerPage() {
           <div className="py-16 text-center">
             <RefreshCw className="h-10 w-10 text-emerald-400 animate-spin mx-auto" />
             <p className="mt-4 text-gray-400">{t.scanner.scanningMsg}</p>
-            <p className="mt-1 text-xs text-gray-500">{t.scanner.scanningTime}</p>
+            <p className="mt-1 text-sm text-gray-500">{t.scanner.scanningTime}</p>
           </div>
         )}
 
@@ -321,7 +321,7 @@ export default function ScannerPage() {
               <p className="mt-1 text-sm text-gray-500">
                 {t.scanner.noSurebetDesc}
               </p>
-              <div className="mt-4 space-y-1 text-xs text-gray-600">
+              <div className="mt-4 space-y-1 text-sm text-gray-600">
                 <p>{t.scanner.noSurebetTip1}</p>
                 <p>{t.scanner.noSurebetTip2}</p>
               </div>
@@ -342,7 +342,7 @@ export default function ScannerPage() {
                   <p className="text-sm font-semibold text-white truncate">
                     {opp.match.home_team} vs {opp.match.away_team}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm text-gray-500">
                     {marketLabels[opp.market_type] || opp.market_type}
                     {opp.legs[0]?.point !== undefined && (
                       <span className="ml-1 text-yellow-400">
@@ -356,7 +356,7 @@ export default function ScannerPage() {
                 <p className="text-lg font-bold text-emerald-400">
                   +{opp.profit_percent}%
                 </p>
-                <p className="text-[10px] text-gray-500">{t.scanner.guaranteedProfitLabel}</p>
+                <p className="text-sm text-gray-500">{t.scanner.guaranteedProfitLabel}</p>
               </div>
             </div>
 
@@ -369,7 +369,7 @@ export default function ScannerPage() {
                       <p className="text-sm font-medium text-white">
                         {translateOutcome(leg.outcome)}
                       </p>
-                      <p className="text-xs text-gray-500 truncate">{leg.bookmaker_title}</p>
+                      <p className="text-sm text-gray-500 truncate">{leg.bookmaker_title}</p>
                       {getBookmakerUrl(leg.bookmaker, leg.bookmaker_title) && (
                         <a
                           href={getBookmakerUrl(leg.bookmaker, leg.bookmaker_title)!}
@@ -384,19 +384,19 @@ export default function ScannerPage() {
                     </div>
                     <div className="flex items-center gap-4 shrink-0">
                       <div className="text-right">
-                        <p className="text-[10px] text-gray-500">{t.common.odds}</p>
+                        <p className="text-sm text-gray-500">{t.common.odds}</p>
                         <p className="font-mono text-sm font-bold text-yellow-400">
                           {leg.odds.toFixed(2)}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[10px] text-gray-500">{t.common.stake}</p>
+                        <p className="text-sm text-gray-500">{t.common.stake}</p>
                         <p className="font-mono text-sm font-medium text-white">
                           {formatMoney(leg.stake)}{currencySuffix}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[10px] text-gray-500">{t.common.payout}</p>
+                        <p className="text-sm text-gray-500">{t.common.payout}</p>
                         <p className="font-mono text-sm font-medium text-emerald-400">
                           {formatMoney(leg.payout)}{currencySuffix}
                         </p>
@@ -408,10 +408,10 @@ export default function ScannerPage() {
 
               {/* Summary */}
               <div className="flex items-center justify-between bg-emerald-500/5 px-4 py-2 border-t border-emerald-500/20">
-                <span className="text-xs text-gray-400">
+                <span className="text-sm text-gray-400">
                   {t.common.capital}: <span className="text-white font-medium">{formatMoney(opp.total_stake)}{currencySuffix}</span>
                 </span>
-                <span className="text-xs text-gray-400">
+                <span className="text-sm text-gray-400">
                   {t.common.profit}: <span className="text-emerald-400 font-bold">+{formatMoney(opp.guaranteed_profit)}{currencySuffix}</span>
                 </span>
               </div>

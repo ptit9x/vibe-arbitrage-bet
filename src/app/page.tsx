@@ -89,15 +89,15 @@ export default async function Home() {
           <div className="mt-10 sm:mt-16 grid grid-cols-3 gap-4 sm:gap-8 border-t border-white/10 pt-6 sm:pt-8">
             <div>
               <p className="text-xl font-bold text-white sm:text-3xl lg:text-4xl">50+</p>
-              <p className="mt-1 text-[10px] sm:text-sm text-gray-500 leading-tight">Bookmakers<br className="sm:hidden" /> Scanned</p>
+              <p className="mt-1 text-xs sm:text-sm text-gray-500 leading-tight">Bookmakers<br className="sm:hidden" /> Scanned</p>
             </div>
             <div>
               <p className="text-xl font-bold text-white sm:text-3xl lg:text-4xl">2-5%</p>
-              <p className="mt-1 text-[10px] sm:text-sm text-gray-500 leading-tight">Avg. Profit<br className="sm:hidden" /> per Bet</p>
+              <p className="mt-1 text-xs sm:text-sm text-gray-500 leading-tight">Avg. Profit<br className="sm:hidden" /> per Bet</p>
             </div>
             <div>
               <p className="text-xl font-bold text-white sm:text-3xl lg:text-4xl">&lt;30s</p>
-              <p className="mt-1 text-[10px] sm:text-sm text-gray-500 leading-tight">Scan<br className="sm:hidden" /> Speed</p>
+              <p className="mt-1 text-xs sm:text-sm text-gray-500 leading-tight">Scan<br className="sm:hidden" /> Speed</p>
             </div>
           </div>
         </div>
@@ -214,7 +214,7 @@ export default async function Home() {
               >
                 <feature.icon className="mb-3 sm:mb-4 h-6 w-6 sm:h-8 sm:w-8 text-emerald-400" />
                 <h3 className="text-sm sm:text-lg font-bold text-white">{feature.title}</h3>
-                <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-400 leading-relaxed">{feature.desc}</p>
+                <p className="text-xs sm:text-sm text-gray-400 leading-relaxed">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -309,8 +309,8 @@ export default async function Home() {
                 <p className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
                   {stat.number}
                 </p>
-                <p className="mt-1.5 sm:mt-2 text-xs sm:text-base font-semibold text-white">{stat.label}</p>
-                <p className="text-[10px] sm:text-sm text-gray-500">{stat.sub}</p>
+                <p className="mt-1 text-xs sm:text-base font-semibold text-white">{stat.label}</p>
+                <p className="text-xs sm:text-sm text-gray-500">{stat.sub}</p>
               </div>
             ))}
           </div>

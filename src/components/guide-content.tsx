@@ -48,7 +48,7 @@ function Section({
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-bold text-white">{title}</h3>
           {badge && (
-            <span className="text-[10px] text-gray-500">{badge}</span>
+            <span className="text-sm text-gray-500">{badge}</span>
           )}
         </div>
         <ChevronDown className="h-4 w-4 text-gray-500 transition-transform group-open:rotate-180" />
@@ -127,17 +127,17 @@ export default function GuideContent() {
               {t.guide.section1P1}
             </p>
             <div className="rounded-xl bg-yellow-500/5 border border-yellow-500/10 p-3">
-              <p className="text-xs text-gray-400 leading-relaxed">
+              <p className="text-sm text-gray-400 leading-relaxed">
                 {t.guide.section1Principle}
               </p>
             </div>
             <div className="rounded-xl bg-gray-800/50 p-3 space-y-2">
-              <p className="text-xs font-semibold text-white">{t.guide.section1Formula}</p>
+              <p className="text-sm font-semibold text-white">{t.guide.section1Formula}</p>
               <div className="rounded-lg bg-gray-900 p-2 text-center font-mono text-xs">
                 <span className="text-gray-400">= </span>
                 <span className="text-emerald-400">1 / odds</span>
               </div>
-              <p className="text-xs text-gray-400">
+              <p className="text-sm text-gray-400">
                 {t.guide.section1Note}
               </p>
             </div>
@@ -153,15 +153,15 @@ export default function GuideContent() {
             badge={t.guide.section2Badge}
           >
             <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
-              <p className="text-xs text-gray-500 mb-3">⚽ Man City vs Arsenal — O/U 2.5</p>
+              <p className="text-sm text-gray-500 mb-3">⚽ Man City vs Arsenal — O/U 2.5</p>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between rounded-lg bg-gray-800/80 p-2.5">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-emerald-400" />
                     <div>
-                      <p className="text-xs font-medium text-white">{t.guide.section2Over}</p>
-                      <p className="text-[10px] text-gray-500">{t.guide.section2OverBookmaker}</p>
+                      <p className="text-sm font-medium text-white">{t.guide.section2Over}</p>
+                      <p className="text-sm text-gray-500">{t.guide.section2OverBookmaker}</p>
                     </div>
                   </div>
                   <span className="text-lg font-bold text-yellow-400">2.10</span>
@@ -170,8 +170,8 @@ export default function GuideContent() {
                   <div className="flex items-center gap-2">
                     <TrendingDown className="h-4 w-4 text-blue-400" />
                     <div>
-                      <p className="text-xs font-medium text-white">{t.guide.section2Under}</p>
-                      <p className="text-[10px] text-gray-500">{t.guide.section2UnderBookmaker}</p>
+                      <p className="text-sm font-medium text-white">{t.guide.section2Under}</p>
+                      <p className="text-sm text-gray-500">{t.guide.section2UnderBookmaker}</p>
                     </div>
                   </div>
                   <span className="text-lg font-bold text-yellow-400">2.05</span>
@@ -186,7 +186,7 @@ export default function GuideContent() {
               </div>
 
               <div className="mt-3 rounded-lg bg-gray-900/80 p-3">
-                <p className="text-[10px] text-gray-500 mb-2">{t.guide.section2Capital}</p>
+                <p className="text-sm text-gray-500 mb-2">{t.guide.section2Capital}</p>
                 <div className="space-y-1 text-xs">
                   <p className="text-gray-300">
                     {t.guide.section2BetOver} <span className="font-bold text-white">516,130đ</span>
@@ -225,19 +225,19 @@ export default function GuideContent() {
                 { title: t.guide.section3Step5Title, desc: t.guide.section3Step5Desc },
               ].map((item, i) => (
                 <div key={i} className="flex items-start gap-3">
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-xs font-bold text-emerald-400">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-bold text-emerald-400">
                     {i + 1}
                   </div>
                   <div>
                     <p className="text-sm font-medium text-white">{item.title}</p>
-                    <p className="text-xs text-gray-400 mt-0.5" dangerouslySetInnerHTML={{ __html: item.desc }} />
+                    <p className="text-sm text-gray-400 mt-0.5" dangerouslySetInnerHTML={{ __html: item.desc }} />
                   </div>
                 </div>
               ))}
             </div>
 
             <div className="rounded-xl bg-blue-500/5 border border-blue-500/10 p-3">
-              <p className="text-xs text-gray-400">
+              <p className="text-sm text-gray-400">
                 <Info className="inline h-3 w-3 text-blue-400 mr-1" />
                 <span dangerouslySetInnerHTML={{ __html: t.guide.section3Tip }} />
               </p>
@@ -259,8 +259,8 @@ export default function GuideContent() {
               </p>
 
               <div className="rounded-xl bg-violet-500/5 border border-violet-500/10 p-3 space-y-2">
-                <p className="text-xs font-semibold text-violet-400">{t.guide.section4Differences}</p>
-                <ul className="space-y-1 text-xs text-gray-400">
+                <p className="text-sm font-semibold text-violet-400">{t.guide.section4Differences}</p>
+                <ul className="space-y-1 text-sm text-gray-400">
                   <li className="flex items-start gap-1.5">
                     <CheckCircle2 className="h-3 w-3 text-emerald-400 mt-0.5 shrink-0" />
                     {t.guide.section4Diff1}
@@ -281,15 +281,15 @@ export default function GuideContent() {
               </div>
 
               <div className="space-y-2">
-                <p className="text-xs font-semibold text-white">{t.guide.section4Reading}</p>
+                <p className="text-sm font-semibold text-white">{t.guide.section4Reading}</p>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-2.5">
-                    <p className="text-[10px] text-emerald-400 font-medium">{t.guide.section4Surebet}</p>
-                    <p className="text-[10px] text-gray-400 mt-0.5">{t.guide.section4SurebetDesc}</p>
+                    <p className="text-sm text-emerald-400 font-medium">{t.guide.section4Surebet}</p>
+                    <p className="text-sm text-gray-400 mt-0.5">{t.guide.section4SurebetDesc}</p>
                   </div>
                   <div className="rounded-lg bg-yellow-500/10 border border-yellow-500/20 p-2.5">
-                    <p className="text-[10px] text-yellow-400 font-medium">{t.guide.section4HighSpread}</p>
-                    <p className="text-[10px] text-gray-400 mt-0.5">{t.guide.section4HighSpreadDesc}</p>
+                    <p className="text-sm text-yellow-400 font-medium">{t.guide.section4HighSpread}</p>
+                    <p className="text-sm text-gray-400 mt-0.5">{t.guide.section4HighSpreadDesc}</p>
                   </div>
                 </div>
               </div>
@@ -318,19 +318,19 @@ export default function GuideContent() {
                   { title: t.guide.section5Step4Title, desc: t.guide.section5Step4Desc },
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cyan-500/20 text-xs font-bold text-cyan-400">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cyan-500/20 text-sm font-bold text-cyan-400">
                       {i + 1}
                     </div>
                     <div>
                       <p className="text-sm font-medium text-white">{item.title}</p>
-                      <p className="text-xs text-gray-400 mt-0.5" dangerouslySetInnerHTML={{ __html: item.desc }} />
+                      <p className="text-sm text-gray-400 mt-0.5" dangerouslySetInnerHTML={{ __html: item.desc }} />
                     </div>
                   </div>
                 ))}
               </div>
 
               <div className="rounded-xl bg-cyan-500/5 border border-cyan-500/10 p-3">
-                <p className="text-xs text-gray-400">
+                <p className="text-sm text-gray-400">
                   <Info className="inline h-3 w-3 text-cyan-400 mr-1" />
                   <span dangerouslySetInnerHTML={{ __html: t.guide.section5Tip }} />
                 </p>
@@ -358,7 +358,7 @@ export default function GuideContent() {
               ].map((risk, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <div
-                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
+                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
                       risk.level === "high"
                         ? "bg-red-500/20 text-red-400"
                         : risk.level === "medium"
@@ -370,14 +370,14 @@ export default function GuideContent() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-white">{risk.title}</p>
-                    <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{risk.desc}</p>
+                    <p className="text-sm text-gray-400 mt-0.5 leading-relaxed">{risk.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
 
             <div className="rounded-xl bg-red-500/5 border border-red-500/10 p-3">
-              <p className="text-xs text-red-300" dangerouslySetInnerHTML={{ __html: t.guide.riskImportant }} />
+              <p className="text-sm text-red-300" dangerouslySetInnerHTML={{ __html: t.guide.riskImportant }} />
             </div>
           </Section>
         </div>
@@ -401,7 +401,7 @@ export default function GuideContent() {
               ].map((item, i) => (
                 <div key={i}>
                   <p className="text-sm font-medium text-white">❓ {item.q}</p>
-                  <p className="mt-1 text-xs text-gray-400 leading-relaxed">{item.a}</p>
+                  <p className="mt-1 text-sm text-gray-400 leading-relaxed">{item.a}</p>
                 </div>
               ))}
             </div>
@@ -417,15 +417,15 @@ export default function GuideContent() {
           <div className="grid grid-cols-3 gap-2">
             <Link href="/scanner" className="rounded-xl bg-emerald-600/10 border border-emerald-500/20 p-3 text-center hover:bg-emerald-600/20 transition-colors">
               <Search className="mx-auto h-5 w-5 text-emerald-400" />
-              <p className="mt-1 text-[10px] font-medium text-gray-400">Scanner</p>
+              <p className="mt-1 text-sm font-medium text-gray-400">Scanner</p>
             </Link>
             <Link href="/ai-analyzer" className="rounded-xl bg-violet-600/10 border border-violet-500/20 p-3 text-center hover:bg-violet-600/20 transition-colors">
               <Brain className="mx-auto h-5 w-5 text-violet-400" />
-              <p className="mt-1 text-[10px] font-medium text-gray-400">AI Analyzer</p>
+              <p className="mt-1 text-sm font-medium text-gray-400">AI Analyzer</p>
             </Link>
             <Link href="/calculator" className="rounded-xl bg-blue-600/10 border border-blue-500/20 p-3 text-center hover:bg-blue-600/20 transition-colors">
               <Calculator className="mx-auto h-5 w-5 text-blue-400" />
-              <p className="mt-1 text-[10px] font-medium text-gray-400">Calculator</p>
+              <p className="mt-1 text-sm font-medium text-gray-400">Calculator</p>
             </Link>
           </div>
         </div>
