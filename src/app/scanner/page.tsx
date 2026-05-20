@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import BottomNav from "@/components/bottom-nav";
+import { getBookmakerUrl } from "@/lib/bookmakers";
 import type { ArbitrageOpportunity } from "@/lib/arbitrage/types";
 import {
   Search,
@@ -274,13 +275,13 @@ export default function ScannerPage() {
             </Button>
 
             <div className="mt-4">
-              <Link
-                href="/guide"
+              <button
+                onClick={() => router.push("/guide")}
                 className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-300 transition-colors"
               >
                 <HelpCircle className="h-3.5 w-3.5" />
                 Xem hướng dẫn chi tiết
-              </Link>
+              </button>
             </div>
           </div>
         )}
@@ -352,6 +353,17 @@ export default function ScannerPage() {
                         {leg.outcome === "Over" ? "Tài" : leg.outcome === "Under" ? "Xỉu" : leg.outcome}
                       </p>
                       <p className="text-xs text-gray-500 truncate">{leg.bookmaker_title}</p>
+                      {getBookmakerUrl(leg.bookmaker, leg.bookmaker_title) && (
+                        <a
+                          href={getBookmakerUrl(leg.bookmaker, leg.bookmaker_title)!}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[10px] text-blue-400 hover:text-blue-300 hover:underline transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          ↗ Mở nhà cái
+                        </a>
+                      )}
                     </div>
                     <div className="flex items-center gap-4 shrink-0">
                       <div className="text-right">
@@ -395,38 +407,14 @@ export default function ScannerPage() {
           <p className="mt-4 text-center text-[10px] text-gray-600">
             Quét lúc: {new Date(lastScan).toLocaleString("vi-VN")} • 
             Cache: 60 giây • 
-            <Link href="/guide" className="text-gray-500 hover:text-gray-400 ml-1">
+            <button onClick={() => router.push("/guide")} className="text-gray-500 hover:text-gray-400 ml-1">
               Hướng dẫn →
-            </Link>
+            </button>
           </p>
         )}
       </div>
 
       <BottomNav />
     </div>
-  );
-}
-
-function Link({
-  href,
-  children,
-  className,
-}: {
-  href: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  const router = useRouter();
-  return (
-    <a
-      href={href}
-      onClick={(e) => {
-        e.preventDefault();
-        router.push(href);
-      }}
-      className={className}
-    >
-      {children}
-    </a>
   );
 }

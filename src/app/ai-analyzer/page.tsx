@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import BottomNav from "@/components/bottom-nav";
 import Link from "next/link";
+import { getBookmakerUrl } from "@/lib/bookmakers";
 import {
   Brain,
   TrendingUp,
@@ -493,7 +494,19 @@ export default function AIAnalyzerPage() {
                         {analysis.discrepancy.maxOverOdds.value.toFixed(2)}
                       </p>
                       <p className="text-[10px] text-gray-400 truncate">
-                        {analysis.discrepancy.maxOverOdds.bookmaker}
+                        {getBookmakerUrl(analysis.discrepancy.maxOverOdds.bookmaker) ? (
+                          <a
+                            href={getBookmakerUrl(analysis.discrepancy.maxOverOdds.bookmaker)!}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 hover:text-blue-300 hover:underline transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {analysis.discrepancy.maxOverOdds.bookmaker} ↗
+                          </a>
+                        ) : (
+                          analysis.discrepancy.maxOverOdds.bookmaker
+                        )}
                       </p>
                     </div>
                     <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 p-3">
@@ -507,7 +520,19 @@ export default function AIAnalyzerPage() {
                         {analysis.discrepancy.maxUnderOdds.value.toFixed(2)}
                       </p>
                       <p className="text-[10px] text-gray-400 truncate">
-                        {analysis.discrepancy.maxUnderOdds.bookmaker}
+                        {getBookmakerUrl(analysis.discrepancy.maxUnderOdds.bookmaker) ? (
+                          <a
+                            href={getBookmakerUrl(analysis.discrepancy.maxUnderOdds.bookmaker)!}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 hover:text-blue-300 hover:underline transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {analysis.discrepancy.maxUnderOdds.bookmaker} ↗
+                          </a>
+                        ) : (
+                          analysis.discrepancy.maxUnderOdds.bookmaker
+                        )}
                       </p>
                     </div>
                   </div>
@@ -594,9 +619,21 @@ export default function AIAnalyzerPage() {
                           key={i}
                           className="grid grid-cols-[1fr_60px_60px] gap-1 rounded-lg px-2 py-1.5 text-xs hover:bg-gray-700/50"
                         >
-                          <span className="text-gray-300 truncate text-[11px]">
-                            {bk.bookmakerTitle}
-                          </span>
+                          {getBookmakerUrl(bk.bookmaker, bk.bookmakerTitle) ? (
+                            <a
+                              href={getBookmakerUrl(bk.bookmaker, bk.bookmakerTitle)!}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-gray-300 hover:text-blue-400 transition-colors text-[11px]"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {bk.bookmakerTitle} ↗
+                            </a>
+                          ) : (
+                            <span className="text-gray-300 text-[11px]">
+                              {bk.bookmakerTitle}
+                            </span>
+                          )}
                           <span
                             className={`text-center font-mono font-medium ${
                               bk.overOdds === analysis.discrepancy.maxOverOdds.value
