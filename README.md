@@ -115,8 +115,18 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 # Sign up free: https://the-odds-api.com
 ODDS_API_KEY=your_odds_api_key
 
-# OpenAI (optional, for AI insights in O/U analyzer)
-OPENAI_API_KEY=your_openai_api_key
+# AI Provider (optional, for AI insights in O/U analyzer)
+# Only need ONE of these:
+
+# Option 1: GLM (z.ai) - recommended
+GLM_API_KEY=your_glm_api_key
+GLM_MODEL=glm-4-flash          # optional, default: glm-4-flash
+# GLM_BASE_URL=                 # optional, default: https://open.bigmodel.cn/api/paas/v4
+
+# Option 2: Minimax
+# MINIMAX_API_KEY=your_minimax_api_key
+# MINIMAX_MODEL=MiniMax-Text-01  # optional
+# MINIMAX_BASE_URL=              # optional
 ```
 
 ## API Endpoints

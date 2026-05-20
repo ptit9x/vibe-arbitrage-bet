@@ -107,27 +107,31 @@ export async function GET(request: NextRequest) {
   }
 
   // AI insights (separate cache, longer TTL)
-  if (includeAi && analyses.length > 0 && process.env.OPENAI_API_KEY) {
-    const aiCacheKey = `ai:${sportsKey}:${minDiscrepancy}`;
-    const cachedAi = oddsCache.get<string>(aiCacheKey);
+  if (includeAi && analyses.length > 0) {
+    const { getAIProvider } = await import("@/lib/ai/provider");
+    const { available } = getAIProvider();
 
-    if (cachedAi && !forceRefresh) {
-      // Apply cached AI insight to top analyses
-      for (let i = 0; i < Math.min(analyses.length, 10); i++) {
-        analyses[i].aiInsight = cachedAi;
-      }
-    } else {
-      try {
-        const topAnalyses = analyses.slice(0, 10);
-        const prompt = buildAiPrompt(topAnalyses);
-        const aiResponse = await fetchAiInsights(prompt);
-        // Cache the AI response
-        oddsCache.set(aiCacheKey, aiResponse, AI_TTL);
-        for (let i = 0; i < topAnalyses.length; i++) {
-          analyses[i].aiInsight = aiResponse;
+    if (available) {
+      const aiCacheKey = `ai:${sportsKey}:${minDiscrepancy}`;
+      const cachedAi = oddsCache.get<string>(aiCacheKey);
+
+      if (cachedAi && !forceRefresh) {
+        for (let i = 0; i < Math.min(analyses.length, 10); i++) {
+          analyses[i].aiInsight = cachedAi;
         }
-      } catch {
-        // AI insights are optional, don't fail
+      } else {
+        try {
+          const { fetchAiInsights } = await import("@/lib/ai/provider");
+          const topAnalyses = analyses.slice(0, 10);
+          const prompt = buildAiPrompt(topAnalyses);
+          const aiResponse = await fetchAiInsights(prompt);
+          oddsCache.set(aiCacheKey, aiResponse, AI_TTL);
+          for (let i = 0; i < topAnalyses.length; i++) {
+            analyses[i].aiInsight = aiResponse;
+          }
+        } catch {
+          // AI insights are optional, don't fail
+        }
       }
     }
   }
@@ -261,34 +265,4 @@ Provide:
 4. Overall market sentiment (are bookmakers leaning over or under?)
 
 Keep your analysis concise and actionable. Use Vietnamese language.`;
-}
-
-async function fetchAiInsights(prompt: string): Promise<string> {
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a sports betting analyst. Respond in Vietnamese. Be concise and actionable.",
-        },
-        { role: "user", content: prompt },
-      ],
-      max_tokens: 1000,
-      temperature: 0.7,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`AI API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content || "";
 }
