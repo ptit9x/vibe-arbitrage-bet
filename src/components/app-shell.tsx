@@ -31,7 +31,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Public pages: no header/sidebar
-  const publicPaths = ["/", "/login", "/register", "/forgot-password", "/reset-password", "/change-password"];
+  const publicPaths = ["/", "/login", "/register", "/forgot-password", "/reset-password"];
   const isPublic = publicPaths.includes(pathname);
 
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
