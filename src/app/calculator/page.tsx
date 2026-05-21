@@ -19,7 +19,7 @@ export default function CalculatorPage() {
   const [odds1, setOdds1] = useState("");
   const [odds2, setOdds2] = useState("");
   const [odds3, setOdds3] = useState("");
-  const [totalStake, setTotalStake] = useState("1000000");
+  const [totalStake, setTotalStake] = useState("100");
   const [showHelp, setShowHelp] = useState(false);
   const [result, setResult] = useState<{
     isArb: boolean;
@@ -29,14 +29,15 @@ export default function CalculatorPage() {
     profit: number;
   } | null>(null);
 
+  // Display: tính với số nhỏ, hiển thị thêm "000" phía sau
   const formatMoney = (amount: number) =>
-    new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US").format(Math.round(amount));
+    new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US").format(Math.round(amount)) + "000";
 
   const calculate = () => {
     const o1 = parseFloat(odds1);
     const o2 = parseFloat(odds2);
     const o3 = odds3 ? parseFloat(odds3) : null;
-    const stake = parseFloat(totalStake) || 1000000;
+    const stake = parseFloat(totalStake) || 100;
 
     if (!o1 || !o2 || o1 <= 0 || o2 <= 0) return;
 
@@ -46,8 +47,7 @@ export default function CalculatorPage() {
     const isArb = impliedTotal < 1;
     const pProfit = isArb ? ((1 - impliedTotal) / impliedTotal) * 100 : 0;
 
-    // Exact calculation, then multiply by 1000
-    const exactStakes = allOdds.map((o) => ((1 / o) / impliedTotal) * stake * 1000);
+    const exactStakes = allOdds.map((o) => ((1 / o) / impliedTotal) * stake);
     const exactPayouts = allOdds.map((o, i) => exactStakes[i] * o);
 
     setResult({
@@ -55,7 +55,7 @@ export default function CalculatorPage() {
       profitPercent: pProfit,
       stakes: exactStakes.map((s) => Math.round(s)),
       payouts: exactPayouts.map((p) => Math.round(p)),
-      profit: Math.round(Math.min(...exactPayouts) - stake * 1000),
+      profit: Math.round(Math.min(...exactPayouts) - stake),
     });
   };
 
@@ -64,12 +64,12 @@ export default function CalculatorPage() {
       setOdds1("2.10");
       setOdds2("2.05");
       setOdds3("");
-      setTotalStake("1000000");
+      setTotalStake("100");
     } else {
       setOdds1("3.20");
       setOdds2("3.50");
       setOdds3("2.30");
-      setTotalStake("1000000");
+      setTotalStake("100");
     }
   };
 
