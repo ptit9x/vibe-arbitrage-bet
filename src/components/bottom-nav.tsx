@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, Brain, Calculator, HelpCircle, Globe } from "lucide-react";
+import { Home, Search, Calculator, HelpCircle, Globe } from "lucide-react";
 import { useI18n } from "@/lib/i18n/provider";
 
 const navItems = [
   { href: "/dashboard", icon: Home, labelKey: "home" as const },
   { href: "/scanner", icon: Search, labelKey: "scanner" as const },
-  { href: "/ai-analyzer", icon: Brain, labelKey: "ai" as const },
   { href: "/calculator", icon: Calculator, labelKey: "calc" as const },
   { href: "/guide", icon: HelpCircle, labelKey: "guide" as const },
 ];
