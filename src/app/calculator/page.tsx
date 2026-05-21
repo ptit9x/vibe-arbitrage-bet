@@ -28,9 +28,9 @@ export default function CalculatorPage() {
     profit: number;
   } | null>(null);
 
-  // Display: tính với số nhỏ, hiển thị thêm "000" phía sau
+  // Display: tính với số nhỏ, hiển thị .000 phía sau
   const formatMoney = (amount: number) =>
-    new Intl.NumberFormat("vi-VN").format(Math.round(amount)) + "000";
+    new Intl.NumberFormat("vi-VN").format(Math.round(amount));
 
   const calculate = () => {
     const o1 = parseFloat(odds1);
@@ -213,10 +213,10 @@ export default function CalculatorPage() {
                           </div>
                           <div className="text-right">
                             <p className="text-lg font-bold text-white">
-                              {formatMoney(stake)}đ
+                              {formatMoney(stake)}.000đ
                             </p>
                             <p className="text-sm text-emerald-400">
-                              {t.calculator.receive} {formatMoney(result.payouts[i])}đ
+                              {t.calculator.receive} {formatMoney(result.payouts[i])}.000đ
                             </p>
                           </div>
                         </div>
@@ -227,10 +227,10 @@ export default function CalculatorPage() {
                   {/* Summary */}
                   <div className="flex items-center justify-between rounded-xl bg-emerald-500/5 border border-emerald-500/20 px-4 py-3">
                     <span className="text-sm text-gray-300">
-                      {t.calculator.totalCapitalLabel} <strong className="text-white">{formatMoney(result.stakes.reduce((a, b) => a + b, 0))}đ</strong>
+                      {t.calculator.totalCapitalLabel} <strong className="text-white">{formatMoney(result.stakes.reduce((a, b) => a + b, 0))}.000đ</strong>
                     </span>
                     <span className="text-sm text-gray-300">
-                      {t.calculator.profitLabel} <strong className="text-emerald-400">+{formatMoney(result.profit)}đ</strong>
+                      {t.calculator.profitLabel} <strong className="text-emerald-400">+{formatMoney(result.profit)}.000đ</strong>
                     </span>
                   </div>
                 </div>

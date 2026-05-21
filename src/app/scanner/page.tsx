@@ -72,9 +72,8 @@ export default function ScannerPage() {
     return () => clearInterval(interval);
   }, [autoRefresh, scanOdds]);
 
-  // Display: tính với số nhỏ, hiển thị thêm "000" phía sau
   const formatMoney = (amount: number) =>
-    new Intl.NumberFormat("vi-VN").format(Math.round(amount)) + "000";
+    new Intl.NumberFormat("vi-VN").format(Math.round(amount));
 
   const sportEmoji: Record<string, string> = {
     soccer: "⚽",
@@ -231,13 +230,13 @@ export default function ScannerPage() {
               <div className="grid grid-cols-2 gap-3 text-center">
                 <div>
                   <p className="text-2xl font-bold text-white">
-                    {formatMoney(totalStake)}đ
+                    {formatMoney(totalStake)}.000đ
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5">{t.common.capital}</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-emerald-400">
-                    +{formatMoney(Math.max(...allTotals.filter(l => l.isArbitrage).map(l => l.guaranteedProfit)))}đ
+                    +{formatMoney(Math.max(...allTotals.filter(l => l.isArbitrage).map(l => l.guaranteedProfit)))}.000đ
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5">{t.common.profit}</p>
                 </div>
@@ -395,13 +394,13 @@ export default function ScannerPage() {
                     <div className="text-right">
                       <p className="text-sm text-gray-500">{t.common.stake}</p>
                       <p className="font-mono text-sm font-medium text-white">
-                        {formatMoney(line.stakes[0])}đ
+                        {formatMoney(line.stakes[0])}.000đ
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-gray-500">{t.common.payout}</p>
                       <p className="font-mono text-sm font-medium text-emerald-400">
-                        {formatMoney(line.payouts[0])}đ
+                        {formatMoney(line.payouts[0])}.000đ
                       </p>
                     </div>
                   </div>
@@ -435,13 +434,13 @@ export default function ScannerPage() {
                     <div className="text-right">
                       <p className="text-sm text-gray-500">{t.common.stake}</p>
                       <p className="font-mono text-sm font-medium text-white">
-                        {formatMoney(line.stakes[1])}đ
+                        {formatMoney(line.stakes[1])}.000đ
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-gray-500">{t.common.payout}</p>
                       <p className="font-mono text-sm font-medium text-emerald-400">
-                        {formatMoney(line.payouts[1])}đ
+                        {formatMoney(line.payouts[1])}.000đ
                       </p>
                     </div>
                   </div>
@@ -452,10 +451,10 @@ export default function ScannerPage() {
               {line.isArbitrage && (
                 <div className="flex items-center justify-between bg-emerald-500/5 px-4 py-2 border-t border-emerald-500/20">
                   <span className="text-sm text-gray-400">
-                    {t.common.capital}: <span className="text-white font-medium">{formatMoney(line.totalStake)}đ</span>
+                    {t.common.capital}: <span className="text-white font-medium">{formatMoney(line.totalStake)}.000đ</span>
                   </span>
                   <span className="text-sm text-gray-400">
-                    {t.common.profit}: <span className="text-emerald-400 font-bold">+{formatMoney(line.guaranteedProfit)}đ</span>
+                    {t.common.profit}: <span className="text-emerald-400 font-bold">+{formatMoney(line.guaranteedProfit)}.000đ</span>
                   </span>
                 </div>
               )}
