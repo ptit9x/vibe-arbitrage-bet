@@ -406,6 +406,34 @@ export default function ScannerPage() {
           </Card>
         ))}
 
+        {/* Best Profit Summary */}
+        {opportunities.length > 0 && (
+          <Card className="border-emerald-500/20 bg-gradient-to-r from-emerald-900/20 to-teal-900/20">
+            <CardContent className="py-4">
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div>
+                  <p className="text-2xl font-bold text-emerald-400">
+                    +{Math.max(...opportunities.map((o) => o.profit_percent)).toFixed(2)}%
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">{t.scanner.bestProfit}</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-yellow-400">
+                    +{formatMoney(Math.max(...opportunities.map((o) => o.guaranteed_profit)))}đ
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">{t.scanner.maxProfitLabel}</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-white">
+                    {opportunities.length}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">{t.scanner.surebetCount}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Scan timestamp */}
         {lastScan && (
           <p className="mt-4 text-center text-[10px] text-gray-600">
