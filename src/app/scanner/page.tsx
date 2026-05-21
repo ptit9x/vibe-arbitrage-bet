@@ -78,12 +78,6 @@ export default function ScannerPage() {
 
   const currencySuffix = "đ";
 
-  const marketLabels: Record<string, string> = {
-    h2h: t.scanner.marketH2H,
-    spreads: t.scanner.marketSpreads,
-    totals: t.scanner.marketTotals,
-  };
-
   const sportEmoji: Record<string, string> = {
     soccer: "⚽",
     basketball: "🏀",
@@ -336,7 +330,7 @@ export default function ScannerPage() {
                     {opp.match.home_team} vs {opp.match.away_team}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {marketLabels[opp.market_type] || opp.market_type}
+                    {t.scanner.marketTotals}
                     {opp.legs[0]?.point !== undefined && (
                       <span className="ml-1 text-yellow-400">
                         ({opp.legs[0].point})

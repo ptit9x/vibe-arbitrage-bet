@@ -10,7 +10,13 @@ const DEFAULT_SPORTS = [
   "soccer_epl",
   "soccer_champions_league_eu",
   "soccer_la_liga",
+  "soccer_italy_serie_a",
+  "soccer_germany_bundesliga",
+  "soccer_europa_league",
   "basketball_nba",
+  "basketball_euroleague",
+  "tennis_atp_wimbledon",
+  "tennis_wta_wimbledon",
 ];
 
 // Cache TTL: 60s for raw odds (same as AI analyzer shares the cache)
@@ -19,10 +25,7 @@ const ODDS_TTL = 60_000;
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const sports = searchParams.get("sports")?.split(",") || DEFAULT_SPORTS;
-  const markets = (searchParams.get("markets")?.split(",") || [
-    "h2h",
-    "totals",
-  ]) as MarketType[];
+  const markets = ["totals"] as MarketType[];
   const minProfit = parseFloat(searchParams.get("min_profit") || "0.5");
   const totalStake = parseInt(searchParams.get("total_stake") || "100");
   const include8xbet = searchParams.get("include_8xbet") === "true";

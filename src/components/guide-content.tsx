@@ -13,7 +13,6 @@ import {
   Shield,
   Calculator,
   Search,
-  Brain,
   ChevronDown,
   Zap,
   Info,
@@ -96,7 +95,6 @@ export default function GuideContent() {
               { label: t.guide.tocSurebet, icon: Lightbulb, color: "text-yellow-400" },
               { label: t.guide.tocExample, icon: Target, color: "text-emerald-400" },
               { label: t.guide.tocScanner, icon: Search, color: "text-blue-400" },
-              { label: t.guide.tocAI, icon: Brain, color: "text-violet-400" },
               { label: t.guide.tocCalc, icon: Calculator, color: "text-cyan-400" },
               { label: t.guide.tocRisks, icon: AlertTriangle, color: "text-red-400" },
               { label: t.guide.tocFaq, icon: HelpCircle, color: "text-gray-400" },
@@ -244,60 +242,8 @@ export default function GuideContent() {
           </Section>
         </div>
 
-        {/* Section 4: AI Analyzer */}
+        {/* Section 4: Calculator */}
         <div id="section-3">
-          <Section
-            icon={Brain}
-            iconColor="text-violet-400"
-            title={t.guide.section4Title}
-            badge={t.guide.section4Badge}
-          >
-            <div className="space-y-3">
-              <p className="text-sm text-gray-300 leading-relaxed">
-                {t.guide.section4Desc}
-              </p>
-
-              <div className="rounded-xl bg-violet-500/5 border border-violet-500/10 p-3 space-y-2">
-                <p className="text-sm font-semibold text-violet-400">{t.guide.section4Differences}</p>
-                <ul className="space-y-1 text-sm text-gray-400">
-                  <li className="flex items-start gap-1.5">
-                    <CheckCircle2 className="h-3 w-3 text-emerald-400 mt-0.5 shrink-0" />
-                    {t.guide.section4Diff1}
-                  </li>
-                  <li className="flex items-start gap-1.5">
-                    <CheckCircle2 className="h-3 w-3 text-emerald-400 mt-0.5 shrink-0" />
-                    {t.guide.section4Diff2}
-                  </li>
-                  <li className="flex items-start gap-1.5">
-                    <CheckCircle2 className="h-3 w-3 text-emerald-400 mt-0.5 shrink-0" />
-                    {t.guide.section4Diff3}
-                  </li>
-                  <li className="flex items-start gap-1.5">
-                    <CheckCircle2 className="h-3 w-3 text-emerald-400 mt-0.5 shrink-0" />
-                    {t.guide.section4Diff4}
-                  </li>
-                </ul>
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-sm font-semibold text-white">{t.guide.section4Reading}</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-2.5">
-                    <p className="text-sm text-emerald-400 font-medium">{t.guide.section4Surebet}</p>
-                    <p className="text-sm text-gray-400 mt-0.5">{t.guide.section4SurebetDesc}</p>
-                  </div>
-                  <div className="rounded-lg bg-yellow-500/10 border border-yellow-500/20 p-2.5">
-                    <p className="text-sm text-yellow-400 font-medium">{t.guide.section4HighSpread}</p>
-                    <p className="text-sm text-gray-400 mt-0.5">{t.guide.section4HighSpreadDesc}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Section>
-        </div>
-
-        {/* Section 5: Calculator */}
-        <div id="section-4">
           <Section
             icon={Calculator}
             iconColor="text-cyan-400"
@@ -413,14 +359,10 @@ export default function GuideContent() {
             <Zap className="h-4 w-4 text-emerald-400" />
             {t.guide.goToTools}
           </h2>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <Link href="/scanner" className="rounded-xl bg-emerald-600/10 border border-emerald-500/20 p-3 text-center hover:bg-emerald-600/20 transition-colors">
               <Search className="mx-auto h-5 w-5 text-emerald-400" />
               <p className="mt-1 text-sm font-medium text-gray-400">Scanner</p>
-            </Link>
-            <Link href="/ai-analyzer" className="rounded-xl bg-violet-600/10 border border-violet-500/20 p-3 text-center hover:bg-violet-600/20 transition-colors">
-              <Brain className="mx-auto h-5 w-5 text-violet-400" />
-              <p className="mt-1 text-sm font-medium text-gray-400">AI Analyzer</p>
             </Link>
             <Link href="/calculator" className="rounded-xl bg-blue-600/10 border border-blue-500/20 p-3 text-center hover:bg-blue-600/20 transition-colors">
               <Calculator className="mx-auto h-5 w-5 text-blue-400" />

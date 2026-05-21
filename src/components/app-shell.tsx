@@ -9,18 +9,15 @@ import {
   X,
   Home,
   Search,
-  Brain,
   Calculator,
   BookOpen,
   Globe,
-  LogOut,
   User,
 } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", icon: Home, labelKey: "home" as const },
   { href: "/scanner", icon: Search, labelKey: "scanner" as const },
-  { href: "/ai-analyzer", icon: Brain, labelKey: "ai" as const },
   { href: "/calculator", icon: Calculator, labelKey: "calc" as const },
   { href: "/guide", icon: BookOpen, labelKey: "guide" as const },
 ];

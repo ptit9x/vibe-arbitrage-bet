@@ -4,7 +4,6 @@ import { useI18n } from "@/lib/i18n/provider";
 import Link from "next/link";
 import {
   Search,
-  Brain,
   Calculator,
   BookOpen,
   Zap,
@@ -58,19 +57,12 @@ export default function DashboardContent({ displayName, initial }: DashboardCont
             <Zap className="h-5 w-5 text-emerald-400" />
             {t.dashboard.tools}
           </h2>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <Link href="/scanner" className="group">
               <div className="rounded-2xl bg-gradient-to-br from-emerald-600/20 to-teal-600/10 border border-emerald-500/20 p-4 text-center transition-all group-hover:border-emerald-400/40 group-hover:bg-emerald-600/25">
                 <Search className="mx-auto h-7 w-7 text-emerald-400" />
                 <p className="mt-2 text-sm font-bold text-white">Scanner</p>
                 <p className="text-xs text-gray-500 mt-0.5">{t.dashboard.scannerDesc}</p>
-              </div>
-            </Link>
-            <Link href="/ai-analyzer" className="group">
-              <div className="rounded-2xl bg-gradient-to-br from-violet-600/20 to-purple-600/10 border border-violet-500/20 p-4 text-center transition-all group-hover:border-violet-400/40 group-hover:bg-violet-600/25">
-                <Brain className="mx-auto h-7 w-7 text-violet-400" />
-                <p className="mt-2 text-sm font-bold text-white">AI O/U</p>
-                <p className="text-xs text-gray-500 mt-0.5">{t.dashboard.aiDesc}</p>
               </div>
             </Link>
             <Link href="/calculator" className="group">
@@ -101,19 +93,19 @@ export default function DashboardContent({ displayName, initial }: DashboardCont
               },
               {
                 step: 2,
-                icon: Brain,
+                icon: Calculator,
                 title: t.dashboard.step2Title,
                 desc: t.dashboard.step2Desc,
-                color: "text-violet-400",
-                href: "/ai-analyzer",
+                color: "text-blue-400",
+                href: "/calculator",
               },
               {
                 step: 3,
-                icon: Calculator,
+                icon: BookOpen,
                 title: t.dashboard.step3Title,
                 desc: t.dashboard.step3Desc,
-                color: "text-blue-400",
-                href: "/calculator",
+                color: "text-yellow-400",
+                href: "/guide",
               },
             ].map((item) => (
               <Link key={item.step} href={item.href} className="group block">
