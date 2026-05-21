@@ -74,7 +74,7 @@ export default function ScannerPage() {
 
   // Display: tính với số nhỏ, hiển thị thêm "000" phía sau
   const formatMoney = (amount: number) =>
-    new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US").format(Math.round(amount)) + "000";
+    new Intl.NumberFormat("vi-VN").format(Math.round(amount)) + "000";
 
   const currencySuffix = "đ";
 
