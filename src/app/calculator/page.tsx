@@ -4,13 +4,9 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useI18n } from "@/lib/i18n/provider";
 import {
   Calculator,
-  ArrowLeft,
   HelpCircle,
   Info,
   CheckCircle2,
@@ -19,7 +15,6 @@ import {
 } from "lucide-react";
 
 export default function CalculatorPage() {
-  const router = useRouter();
   const { t, locale } = useI18n();
   const [odds1, setOdds1] = useState("");
   const [odds2, setOdds2] = useState("");
@@ -32,54 +27,10 @@ export default function CalculatorPage() {
     stakes: number[];
     payouts: number[];
     profit: number;
-    roundedStakes: number[];
-    roundedPayouts: number[];
-    roundedProfit: number;
-    roundedProfitPercent: number;
-    roundedTotalStake: number;
-    roundMode: string;
   } | null>(null);
 
   const formatMoney = (amount: number) =>
     new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US").format(Math.round(amount));
-
-  type RoundMode = "none" | "10k" | "50k" | "100k";
-  const [roundMode, setRoundMode] = useState<RoundMode>("10k");
-
-  const getRoundUnit = (mode: RoundMode): number => {
-    switch (mode) {
-      case "10k": return 10_000;
-      case "50k": return 50_000;
-      case "100k": return 100_000;
-      default: return 1;
-    }
-  };
-
-  const roundStakes = (exactStakes: number[], unit: number, allOdds: number[]): number[] => {
-    if (unit <= 1) return exactStakes.map((s) => Math.round(s));
-
-    const rounded = exactStakes.map((s) => Math.round(s / unit) * unit);
-
-    const totalExact = exactStakes.reduce((a, b) => a + b, 0);
-    const totalRounded = rounded.reduce((a, b) => a + b, 0);
-    const diff = totalRounded - totalExact;
-
-    if (Math.abs(diff) >= unit) {
-      const maxIdx = exactStakes.indexOf(Math.max(...exactStakes));
-      rounded[maxIdx] = Math.round((exactStakes[maxIdx] - diff) / unit) * unit;
-    }
-
-    const payouts = rounded.map((s, i) => s * allOdds[i]);
-    const minPayout = Math.min(...payouts);
-    const totalStakeRounded = rounded.reduce((a, b) => a + b, 0);
-
-    if (minPayout <= totalStakeRounded) {
-      const maxIdx = exactStakes.indexOf(Math.max(...exactStakes));
-      rounded[maxIdx] += unit;
-    }
-
-    return rounded;
-  };
 
   const calculate = () => {
     const o1 = parseFloat(odds1);
@@ -95,31 +46,16 @@ export default function CalculatorPage() {
     const isArb = impliedTotal < 1;
     const pProfit = isArb ? ((1 - impliedTotal) / impliedTotal) * 100 : 0;
 
-    const exactStakes = allOdds.map((o) => ((1 / o) / impliedTotal) * stake);
+    // Exact calculation, then multiply by 1000
+    const exactStakes = allOdds.map((o) => ((1 / o) / impliedTotal) * stake * 1000);
     const exactPayouts = allOdds.map((o, i) => exactStakes[i] * o);
-
-    const unit = getRoundUnit(roundMode);
-    const roundedStakes = roundStakes(exactStakes, unit, allOdds);
-    const roundedPayouts = allOdds.map((o, i) => roundedStakes[i] * o);
-    const roundedMinPayout = Math.min(...roundedPayouts);
-    const roundedTotalStake = roundedStakes.reduce((a, b) => a + b, 0);
-    const roundedProfit = isArb ? roundedMinPayout - roundedTotalStake : 0;
-    const roundedProfitPercent = isArb && roundedTotalStake > 0
-      ? (roundedProfit / roundedTotalStake) * 100
-      : 0;
 
     setResult({
       isArb,
       profitPercent: pProfit,
-      stakes: exactStakes,
-      payouts: exactPayouts,
-      profit: exactPayouts[0] - stake,
-      roundedStakes,
-      roundedPayouts,
-      roundedProfit,
-      roundedProfitPercent,
-      roundedTotalStake,
-      roundMode,
+      stakes: exactStakes.map((s) => Math.round(s)),
+      payouts: exactPayouts.map((p) => Math.round(p)),
+      profit: Math.round(Math.min(...exactPayouts) - stake * 1000),
     });
   };
 
@@ -137,33 +73,18 @@ export default function CalculatorPage() {
     }
   };
 
-  const roundLabels: Record<string, string> = {
-    none: t.calculator.roundNone,
-    "10k": t.calculator.round10k,
-    "50k": t.calculator.round50k,
-    "100k": t.calculator.round100k,
-  };
-
   return (
     <div className="min-h-screen bg-gray-950">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-4 text-white shadow-lg">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-4 text-white shadow-lg">
         <div className="mx-auto max-w-lg">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => router.push("/dashboard")}
-                className="text-white hover:bg-white/10 rounded-lg p-1 -ml-1"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <div>
-                <h1 className="text-xl font-bold flex items-center gap-2">
-                  <Calculator className="h-5 w-5" />
-                  {t.calculator.title}
-                </h1>
-                <p className="text-xs text-blue-100">{t.calculator.subtitle}</p>
-              </div>
+            <div>
+              <h1 className="text-xl font-bold flex items-center gap-2">
+                <Calculator className="h-5 w-5" />
+                {t.calculator.title}
+              </h1>
+              <p className="text-xs text-blue-100">{t.calculator.subtitle}</p>
             </div>
             <button
               onClick={() => setShowHelp(!showHelp)}
@@ -263,27 +184,6 @@ export default function CalculatorPage() {
                 className="mt-1 border-white/10 bg-gray-800 text-white"
               />
             </div>
-            <div>
-              <label className="text-sm text-gray-400 mb-2 block">
-                {t.calculator.roundingLabel}
-                <span className="text-gray-600 ml-1">{t.calculator.roundingNote}</span>
-              </label>
-              <div className="flex gap-2">
-                {(["none", "10k", "50k", "100k"] as const).map((val) => (
-                  <button
-                    key={val}
-                    onClick={() => setRoundMode(val)}
-                    className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-                      roundMode === val
-                        ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/30"
-                        : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                    }`}
-                  >
-                    {roundLabels[val]}
-                  </button>
-                ))}
-              </div>
-            </div>
             <Button
               onClick={calculate}
               className="w-full bg-emerald-600 font-bold hover:bg-emerald-700"
@@ -327,10 +227,8 @@ export default function CalculatorPage() {
               {/* Stake breakdown */}
               {result.isArb && (
                 <div className="space-y-2">
-                  {result.roundedStakes.map((rStake, i) => {
+                  {result.stakes.map((stake, i) => {
                     const odds = [odds1, odds2, odds3].filter(Boolean);
-                    const exactStake = result.stakes[i];
-                    const isDifferent = Math.abs(rStake - Math.round(exactStake)) > 1;
                     return (
                       <div
                         key={i}
@@ -345,15 +243,10 @@ export default function CalculatorPage() {
                           </div>
                           <div className="text-right">
                             <p className="text-lg font-bold text-white">
-                              {formatMoney(rStake)}đ
+                              {formatMoney(stake)}đ
                             </p>
-                            {isDifferent && (
-                              <p className="text-sm text-gray-600 line-through">
-                                {t.calculator.exact} {formatMoney(exactStake)}đ
-                              </p>
-                            )}
                             <p className="text-sm text-emerald-400">
-                              {t.calculator.receive} {formatMoney(result.roundedPayouts[i])}đ
+                              {t.calculator.receive} {formatMoney(result.payouts[i])}đ
                             </p>
                           </div>
                         </div>
@@ -364,21 +257,12 @@ export default function CalculatorPage() {
                   {/* Summary */}
                   <div className="flex items-center justify-between rounded-xl bg-emerald-500/5 border border-emerald-500/20 px-4 py-3">
                     <span className="text-sm text-gray-300">
-                      {t.calculator.totalCapitalLabel} <strong className="text-white">{formatMoney(result.roundedTotalStake)}đ</strong>
+                      {t.calculator.totalCapitalLabel} <strong className="text-white">{formatMoney(result.stakes.reduce((a, b) => a + b, 0))}đ</strong>
                     </span>
                     <span className="text-sm text-gray-300">
-                      {t.calculator.profitLabel} <strong className="text-emerald-400">+{formatMoney(result.roundedProfit)}đ ({result.roundedProfitPercent.toFixed(2)}%)</strong>
+                      {t.calculator.profitLabel} <strong className="text-emerald-400">+{formatMoney(result.profit)}đ</strong>
                     </span>
                   </div>
-
-                  {result.roundMode !== "none" && (
-                    <div className="rounded-lg bg-blue-500/5 border border-blue-500/10 p-2.5">
-                      <p className="text-sm text-blue-400 flex items-center gap-1">
-                        <Lightbulb className="h-3 w-3" />
-                        {t.calculator.roundTip}
-                      </p>
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -416,18 +300,9 @@ export default function CalculatorPage() {
                 {t.calculator.howTip4}
               </li>
             </ul>
-            <div className="mt-3 pt-3 border-t border-white/5">
-              <Link
-                href="/guide"
-                className="text-sm text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
-              >
-                {t.common.viewGuide}
-              </Link>
-            </div>
           </CardContent>
         </Card>
       </div>
-
     </div>
   );
 }
