@@ -30,6 +30,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const { t, locale, setLocale } = useI18n();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Public pages: no header/sidebar
+  const publicPaths = ["/", "/login", "/register", "/forgot-password", "/reset-password", "/change-password"];
+  const isPublic = publicPaths.includes(pathname);
+
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
 
   // Close sidebar on route change
@@ -53,6 +57,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, [sidebarOpen]);
 
   const toggleLocale = () => setLocale(locale === "vi" ? "en" : "vi");
+
+  // Public pages: render without shell
+  if (isPublic) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col">
