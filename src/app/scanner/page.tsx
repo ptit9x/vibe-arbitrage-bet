@@ -224,6 +224,28 @@ export default function ScannerPage() {
           </div>
         )}
 
+        {/* Best Profit Summary */}
+        {surebetCount > 0 && (
+          <Card className="mb-4 border-emerald-500/20 bg-gradient-to-r from-emerald-900/20 to-teal-900/20">
+            <CardContent className="py-4">
+              <div className="grid grid-cols-2 gap-3 text-center">
+                <div>
+                  <p className="text-2xl font-bold text-white">
+                    {formatMoney(totalStake)}đ
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">{t.common.capital}</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-emerald-400">
+                    +{formatMoney(Math.max(...allTotals.filter(l => l.isArbitrage).map(l => l.guaranteedProfit)))}đ
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">{t.common.profit}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* First time - no scan yet */}
         {!lastScan && !loading && !error && (
           <div className="py-12 text-center">
