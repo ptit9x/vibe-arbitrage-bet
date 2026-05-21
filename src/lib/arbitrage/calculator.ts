@@ -1,6 +1,6 @@
 // Core arbitrage detection and calculation engine
 
-import { ArbitrageLeg, ArbitrageOpportunity, MarketOdds, MarketType, Match, OddsData } from "./types";
+import { ArbitrageLeg, ArbitrageOpportunity, MarketOdds, MarketType, Match, OddsData, TotalsLine } from "./types";
 
 /**
  * Calculate implied probability from decimal odds
@@ -315,4 +315,81 @@ export function scanAllMatches(
   // Sort by profit percent descending
   all.sort((a, b) => b.profit_percent - a.profit_percent);
   return all;
+}
+
+/**
+ * List ALL totals lines (surebet + non-surebet), sorted by implied total ascending
+ */
+export function listAllTotals(
+  allOdds: OddsData[],
+  totalStake: number = 100
+): TotalsLine[] {
+  const merged = mergeDuplicateMatches(allOdds);
+  const deduped = deduplicateTotals(merged);
+  const results: TotalsLine[] = [];
+
+  for (const oddsData of deduped) {
+    const totals = oddsData.markets.totals;
+    if (!totals || totals.length < 2) continue;
+
+    // Group by point
+    const byPoint = new Map<number, MarketOdds[]>();
+    for (const mo of totals) {
+      const point = mo.outcomes[0]?.point ?? 0;
+      if (!byPoint.has(point)) byPoint.set(point, []);
+      byPoint.get(point)!.push(mo);
+    }
+
+    for (const [point, pointOdds] of Array.from(byPoint.entries())) {
+      if (pointOdds.length < 2) continue;
+
+      const bestOver = pointOdds.reduce((best, mo) => {
+        const o = mo.outcomes.find(out => out.name === "Over");
+        return o && o.price > best.odds ? { odds: o.price, bookmaker: mo.bookmaker, bookmaker_title: mo.bookmaker_title } : best;
+      }, { odds: 0, bookmaker: "", bookmaker_title: "" });
+
+      const bestUnder = pointOdds.reduce((best, mo) => {
+        const u = mo.outcomes.find(out => out.name === "Under");
+        return u && u.price > best.odds ? { odds: u.price, bookmaker: mo.bookmaker, bookmaker_title: mo.bookmaker_title } : best;
+      }, { odds: 0, bookmaker: "", bookmaker_title: "" });
+
+      if (bestOver.odds <= 0 || bestUnder.odds <= 0) continue;
+
+      const impliedTotal = totalImpliedProbability([bestOver.odds, bestUnder.odds]);
+      const isArb = impliedTotal < 1;
+      const pProfit = isArb ? profitPercent(impliedTotal) : 0;
+
+      const overStake = (1 / bestOver.odds) / impliedTotal * totalStake;
+      const underStake = (1 / bestUnder.odds) / impliedTotal * totalStake;
+      const overPayout = overStake * bestOver.odds;
+      const underPayout = underStake * bestUnder.odds;
+      const minPayout = Math.min(overPayout, underPayout);
+      const guaranteedProfit = isArb ? minPayout - totalStake : 0;
+
+      results.push({
+        id: `${oddsData.match.id}-totals-${point}`,
+        match: oddsData.match,
+        point,
+        bestOver,
+        bestUnder,
+        impliedTotal: Math.round(impliedTotal * 10000) / 10000,
+        profitPercent: Math.round(pProfit * 100) / 100,
+        isArbitrage: isArb,
+        stakes: [Math.round(overStake), Math.round(underStake)],
+        payouts: [Math.round(overPayout), Math.round(underPayout)],
+        totalStake,
+        guaranteedProfit: Math.round(guaranteedProfit),
+      });
+    }
+  }
+
+  // Sort: surebets first (by profit desc), then non-surebets (by implied total asc)
+  results.sort((a, b) => {
+    if (a.isArbitrage && !b.isArbitrage) return -1;
+    if (!a.isArbitrage && b.isArbitrage) return 1;
+    if (a.isArbitrage && b.isArbitrage) return b.profitPercent - a.profitPercent;
+    return a.impliedTotal - b.impliedTotal;
+  });
+
+  return results;
 }

@@ -62,3 +62,20 @@ export type ArbitrageOpportunity = {
   guaranteed_profit: number;
   expires_at?: string;     // When odds were last updated
 };
+
+// Totals line result (for showing all lines, not just surebets)
+
+export type TotalsLine = {
+  id: string;
+  match: Match;
+  point: number;             // e.g. 2.5
+  bestOver: { odds: number; bookmaker: string; bookmaker_title: string };
+  bestUnder: { odds: number; bookmaker: string; bookmaker_title: string };
+  impliedTotal: number;      // sum of implied probs (< 1 = surebet)
+  profitPercent: number;     // 0 if not arb
+  isArbitrage: boolean;
+  stakes: number[];          // [overStake, underStake]
+  payouts: number[];         // [overPayout, underPayout]
+  totalStake: number;
+  guaranteedProfit: number;
+};

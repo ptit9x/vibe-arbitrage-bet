@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchMultiSportOdds, normalizeOddsResponse } from "@/lib/odds/theoddsapi";
-import { scanAllMatches } from "@/lib/arbitrage";
+import { scanAllMatches, listAllTotals } from "@/lib/arbitrage";
 import { MarketType, OddsData } from "@/lib/arbitrage/types";
 import { oddsCache } from "@/lib/cache";
 
@@ -86,6 +86,9 @@ export async function GET(request: NextRequest) {
   // 3. Scan for arbitrage
   const opportunities = scanAllMatches(allOdds, minProfit, totalStake);
 
+  // 4. List all totals lines
+  const all_totals = listAllTotals(allOdds, totalStake);
+
   return NextResponse.json({
     success: true,
     cached: !forceRefresh && oddsCache.has(oddsCacheKey),
@@ -96,6 +99,7 @@ export async function GET(request: NextRequest) {
     scanned_matches: allOdds.length,
     opportunities_found: opportunities.length,
     opportunities,
+    all_totals,
     errors: errors.length > 0 ? errors : undefined,
     scanned_at: new Date().toISOString(),
   });

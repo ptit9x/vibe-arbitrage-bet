@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { getBookmakerUrl } from "@/lib/bookmakers";
 import { useI18n } from "@/lib/i18n/provider";
-import type { ArbitrageOpportunity } from "@/lib/arbitrage/types";
+import type { TotalsLine } from "@/lib/arbitrage/types";
 import {
   Search,
   RefreshCw,
@@ -17,17 +17,17 @@ import {
   Zap,
   AlertCircle,
   CheckCircle2,
-  ChevronRight,
+  XCircle,
+  TrendingUp,
 } from "lucide-react";
 
 export default function ScannerPage() {
   const router = useRouter();
   const { t, locale } = useI18n();
-  const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>([]);
+  const [allTotals, setAllTotals] = useState<TotalsLine[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalStake, setTotalStake] = useState(100);
-  const [minProfit, setMinProfit] = useState(0.5);
   const [lastScan, setLastScan] = useState<string | null>(null);
   const [scannedMatches, setScannedMatches] = useState(0);
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -51,12 +51,12 @@ export default function ScannerPage() {
     setError(null);
     try {
       const res = await fetch(
-        `/api/odds?total_stake=${totalStake}&min_profit=${minProfit}${include8xbet ? "&include_8xbet=true" : ""}`
+        `/api/odds?total_stake=${totalStake}&min_profit=0${include8xbet ? "&include_8xbet=true" : ""}`
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Scan failed");
 
-      setOpportunities(data.opportunities);
+      setAllTotals(data.all_totals || []);
       setScannedMatches(data.scanned_matches);
       setLastScan(data.scanned_at);
     } catch (err) {
@@ -64,7 +64,7 @@ export default function ScannerPage() {
     } finally {
       setLoading(false);
     }
-  }, [totalStake, minProfit, include8xbet]);
+  }, [totalStake, include8xbet]);
 
   useEffect(() => {
     if (!autoRefresh) return;
@@ -76,8 +76,6 @@ export default function ScannerPage() {
   const formatMoney = (amount: number) =>
     new Intl.NumberFormat("vi-VN").format(Math.round(amount)) + "000";
 
-  const currencySuffix = "đ";
-
   const sportEmoji: Record<string, string> = {
     soccer: "⚽",
     basketball: "🏀",
@@ -87,16 +85,10 @@ export default function ScannerPage() {
     mma: "🥊",
   };
 
-  const translateOutcome = (outcome: string) => {
-    switch (outcome) {
-      case "Over": return t.scanner.legOver;
-      case "Under": return t.scanner.legUnder;
-      case "Draw": return t.scanner.legDraw;
-      case "Home": return t.scanner.legHome;
-      case "Away": return t.scanner.legAway;
-      default: return outcome;
-    }
-  };
+  const surebetCount = allTotals.filter((t) => t.isArbitrage).length;
+  const bestProfit = surebetCount > 0
+    ? Math.max(...allTotals.filter((t) => t.isArbitrage).map((t) => t.profitPercent))
+    : 0;
 
   return (
     <div className="min-h-screen bg-gray-950">
@@ -154,16 +146,6 @@ export default function ScannerPage() {
                 type="number"
                 value={totalStake}
                 onChange={(e) => setTotalStake(Number(e.target.value))}
-                className="mt-1 h-10 border-white/20 bg-white/10 text-white text-base placeholder:text-white/50"
-              />
-            </div>
-            <div className="w-24">
-              <label className="text-sm text-emerald-200">{t.scanner.minPercentLabel}</label>
-              <Input
-                type="number"
-                step="0.1"
-                value={minProfit}
-                onChange={(e) => setMinProfit(Number(e.target.value))}
                 className="mt-1 h-10 border-white/20 bg-white/10 text-white text-base placeholder:text-white/50"
               />
             </div>
@@ -230,14 +212,12 @@ export default function ScannerPage() {
               <p className="text-sm text-gray-500">{t.scanner.matchesScanned}</p>
             </div>
             <div className="rounded-xl bg-gray-900 border border-white/5 p-3 text-center">
-              <p className="text-2xl font-bold text-emerald-400">{opportunities.length}</p>
+              <p className="text-2xl font-bold text-emerald-400">{surebetCount}</p>
               <p className="text-sm text-gray-500">{t.scanner.surebetCount}</p>
             </div>
             <div className="rounded-xl bg-gray-900 border border-white/5 p-3 text-center">
               <p className="text-2xl font-bold text-yellow-400">
-                {opportunities.length > 0
-                  ? `${opportunities[0].profit_percent.toFixed(1)}%`
-                  : "0%"}
+                {bestProfit > 0 ? `+${bestProfit.toFixed(1)}%` : "0%"}
               </p>
               <p className="text-sm text-gray-500">{t.scanner.bestProfit}</p>
             </div>
@@ -300,7 +280,7 @@ export default function ScannerPage() {
         )}
 
         {/* No results */}
-        {opportunities.length === 0 && lastScan && !loading && (
+        {allTotals.length === 0 && lastScan && !loading && (
           <Card className="border-gray-700 bg-gray-900">
             <CardContent className="py-8 text-center">
               <p className="text-4xl">🔍</p>
@@ -316,123 +296,150 @@ export default function ScannerPage() {
           </Card>
         )}
 
-        {/* Opportunities */}
-        {opportunities.map((opp) => (
-          <Card key={opp.id} className="mb-3 border-white/5 bg-gray-900 overflow-hidden">
+        {/* All totals lines */}
+        {allTotals.map((line) => (
+          <Card
+            key={line.id}
+            className={`mb-3 overflow-hidden ${
+              line.isArbitrage
+                ? "border-emerald-500/30 bg-gray-900"
+                : "border-white/5 bg-gray-900"
+            }`}
+          >
             {/* Match header */}
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5">
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 <span className="text-lg shrink-0">
-                  {sportEmoji[opp.match.sport] || "🏆"}
+                  {sportEmoji[line.match.sport] || "🏆"}
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-white truncate">
-                    {opp.match.home_team} vs {opp.match.away_team}
+                    {line.match.home_team} vs {line.match.away_team}
                   </p>
                   <p className="text-sm text-gray-500">
                     {t.scanner.marketTotals}
-                    {opp.legs[0]?.point !== undefined && (
-                      <span className="ml-1 text-yellow-400">
-                        ({opp.legs[0].point})
-                      </span>
-                    )}
+                    <span className="ml-1 text-yellow-400">({line.point})</span>
                   </p>
                 </div>
               </div>
               <div className="text-right shrink-0 ml-2">
-                <p className="text-lg font-bold text-emerald-400">
-                  +{opp.profit_percent}%
-                </p>
-                <p className="text-sm text-gray-500">{t.scanner.guaranteedProfitLabel}</p>
+                {line.isArbitrage ? (
+                  <>
+                    <p className="text-lg font-bold text-emerald-400">
+                      +{line.profitPercent.toFixed(2)}%
+                    </p>
+                    <p className="text-xs text-emerald-500">{t.scanner.guaranteedProfitLabel}</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium text-gray-400">
+                      {line.impliedTotal.toFixed(4)}
+                    </p>
+                    <p className="text-xs text-gray-600">implied</p>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Legs */}
+            {/* Over / Under */}
             <CardContent className="p-0">
               <div className="divide-y divide-white/5">
-                {opp.legs.map((leg, i) => (
-                  <div key={i} className="flex items-center justify-between px-4 py-3">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-white">
-                        {translateOutcome(leg.outcome)}
+                {/* Over */}
+                <div className="flex items-center justify-between px-4 py-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-white">
+                      {t.scanner.legOver}
+                    </p>
+                    <p className="text-sm text-gray-500 truncate">{line.bestOver.bookmaker_title}</p>
+                    {getBookmakerUrl(line.bestOver.bookmaker, line.bestOver.bookmaker_title) && (
+                      <a
+                        href={getBookmakerUrl(line.bestOver.bookmaker, line.bestOver.bookmaker_title)!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] text-blue-400 hover:text-blue-300 hover:underline transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {t.common.openBookmaker}
+                      </a>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-4 shrink-0">
+                    <div className="text-right">
+                      <p className="text-sm text-gray-500">{t.common.odds}</p>
+                      <p className="font-mono text-sm font-bold text-yellow-400">
+                        {line.bestOver.odds.toFixed(2)}
                       </p>
-                      <p className="text-sm text-gray-500 truncate">{leg.bookmaker_title}</p>
-                      {getBookmakerUrl(leg.bookmaker, leg.bookmaker_title) && (
-                        <a
-                          href={getBookmakerUrl(leg.bookmaker, leg.bookmaker_title)!}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[10px] text-blue-400 hover:text-blue-300 hover:underline transition-colors"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {t.common.openBookmaker}
-                        </a>
-                      )}
                     </div>
-                    <div className="flex items-center gap-4 shrink-0">
-                      <div className="text-right">
-                        <p className="text-sm text-gray-500">{t.common.odds}</p>
-                        <p className="font-mono text-sm font-bold text-yellow-400">
-                          {leg.odds.toFixed(2)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-500">{t.common.stake}</p>
-                        <p className="font-mono text-sm font-medium text-white">
-                          {formatMoney(leg.stake)}{currencySuffix}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-500">{t.common.payout}</p>
-                        <p className="font-mono text-sm font-medium text-emerald-400">
-                          {formatMoney(leg.payout)}{currencySuffix}
-                        </p>
-                      </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-500">{t.common.stake}</p>
+                      <p className="font-mono text-sm font-medium text-white">
+                        {formatMoney(line.stakes[0])}đ
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-500">{t.common.payout}</p>
+                      <p className="font-mono text-sm font-medium text-emerald-400">
+                        {formatMoney(line.payouts[0])}đ
+                      </p>
                     </div>
                   </div>
-                ))}
+                </div>
+                {/* Under */}
+                <div className="flex items-center justify-between px-4 py-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-white">
+                      {t.scanner.legUnder}
+                    </p>
+                    <p className="text-sm text-gray-500 truncate">{line.bestUnder.bookmaker_title}</p>
+                    {getBookmakerUrl(line.bestUnder.bookmaker, line.bestUnder.bookmaker_title) && (
+                      <a
+                        href={getBookmakerUrl(line.bestUnder.bookmaker, line.bestUnder.bookmaker_title)!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] text-blue-400 hover:text-blue-300 hover:underline transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {t.common.openBookmaker}
+                      </a>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-4 shrink-0">
+                    <div className="text-right">
+                      <p className="text-sm text-gray-500">{t.common.odds}</p>
+                      <p className="font-mono text-sm font-bold text-yellow-400">
+                        {line.bestUnder.odds.toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-500">{t.common.stake}</p>
+                      <p className="font-mono text-sm font-medium text-white">
+                        {formatMoney(line.stakes[1])}đ
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-500">{t.common.payout}</p>
+                      <p className="font-mono text-sm font-medium text-emerald-400">
+                        {formatMoney(line.payouts[1])}đ
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Summary */}
-              <div className="flex items-center justify-between bg-emerald-500/5 px-4 py-2 border-t border-emerald-500/20">
-                <span className="text-sm text-gray-400">
-                  {t.common.capital}: <span className="text-white font-medium">{formatMoney(opp.total_stake)}{currencySuffix}</span>
-                </span>
-                <span className="text-sm text-gray-400">
-                  {t.common.profit}: <span className="text-emerald-400 font-bold">+{formatMoney(opp.guaranteed_profit)}{currencySuffix}</span>
-                </span>
-              </div>
+              {line.isArbitrage && (
+                <div className="flex items-center justify-between bg-emerald-500/5 px-4 py-2 border-t border-emerald-500/20">
+                  <span className="text-sm text-gray-400">
+                    {t.common.capital}: <span className="text-white font-medium">{formatMoney(line.totalStake)}đ</span>
+                  </span>
+                  <span className="text-sm text-gray-400">
+                    {t.common.profit}: <span className="text-emerald-400 font-bold">+{formatMoney(line.guaranteedProfit)}đ</span>
+                  </span>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}
-
-        {/* Best Profit Summary */}
-        {opportunities.length > 0 && (
-          <Card className="border-emerald-500/20 bg-gradient-to-r from-emerald-900/20 to-teal-900/20">
-            <CardContent className="py-4">
-              <div className="grid grid-cols-3 gap-3 text-center">
-                <div>
-                  <p className="text-2xl font-bold text-emerald-400">
-                    +{Math.max(...opportunities.map((o) => o.profit_percent)).toFixed(2)}%
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">{t.scanner.bestProfit}</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-yellow-400">
-                    +{formatMoney(Math.max(...opportunities.map((o) => o.guaranteed_profit)))}đ
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">{t.scanner.maxProfitLabel}</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-white">
-                    {opportunities.length}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">{t.scanner.surebetCount}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Scan timestamp */}
         {lastScan && (
