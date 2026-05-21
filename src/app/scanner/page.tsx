@@ -26,7 +26,7 @@ export default function ScannerPage() {
   const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [totalStake, setTotalStake] = useState(1000000);
+  const [totalStake, setTotalStake] = useState(100);
   const [minProfit, setMinProfit] = useState(0.5);
   const [lastScan, setLastScan] = useState<string | null>(null);
   const [scannedMatches, setScannedMatches] = useState(0);
@@ -72,8 +72,9 @@ export default function ScannerPage() {
     return () => clearInterval(interval);
   }, [autoRefresh, scanOdds]);
 
+  // Display: tính với số nhỏ, hiển thị thêm "000" phía sau
   const formatMoney = (amount: number) =>
-    new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US").format(Math.round(amount));
+    new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US").format(Math.round(amount)) + "000";
 
   const currencySuffix = "đ";
 

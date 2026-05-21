@@ -18,7 +18,6 @@ export default function CalculatorPage() {
   const { t, locale } = useI18n();
   const [odds1, setOdds1] = useState("");
   const [odds2, setOdds2] = useState("");
-  const [odds3, setOdds3] = useState("");
   const [totalStake, setTotalStake] = useState("100");
   const [showHelp, setShowHelp] = useState(false);
   const [result, setResult] = useState<{
@@ -36,12 +35,11 @@ export default function CalculatorPage() {
   const calculate = () => {
     const o1 = parseFloat(odds1);
     const o2 = parseFloat(odds2);
-    const o3 = odds3 ? parseFloat(odds3) : null;
     const stake = parseFloat(totalStake) || 100;
 
     if (!o1 || !o2 || o1 <= 0 || o2 <= 0) return;
 
-    const allOdds = o3 && o3 > 0 ? [o1, o2, o3] : [o1, o2];
+    const allOdds = [o1, o2];
     const impliedTotal = allOdds.reduce((sum, o) => sum + 1 / o, 0);
 
     const isArb = impliedTotal < 1;
@@ -59,18 +57,10 @@ export default function CalculatorPage() {
     });
   };
 
-  const loadExample = (type: "2way" | "3way") => {
-    if (type === "2way") {
-      setOdds1("2.10");
-      setOdds2("2.05");
-      setOdds3("");
-      setTotalStake("100");
-    } else {
-      setOdds1("3.20");
-      setOdds2("3.50");
-      setOdds3("2.30");
-      setTotalStake("100");
-    }
+  const loadExample = () => {
+    setOdds1("2.10");
+    setOdds2("2.05");
+    setTotalStake("100");
   };
 
   return (
@@ -116,21 +106,14 @@ export default function CalculatorPage() {
       </div>
 
       <div className="mx-auto max-w-lg px-4 py-4 space-y-4">
-        {/* Quick examples */}
-        <div className="flex gap-2">
+        {/* Quick example */}
+        <div>
           <button
-            onClick={() => loadExample("2way")}
-            className="flex-1 rounded-xl border border-white/5 bg-gray-900/50 p-2.5 text-center text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
+            onClick={loadExample}
+            className="w-full rounded-xl border border-white/5 bg-gray-900/50 p-2.5 text-center text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
           >
             <span className="block text-base mb-0.5">⚽</span>
             {t.calculator.example2way}
-          </button>
-          <button
-            onClick={() => loadExample("3way")}
-            className="flex-1 rounded-xl border border-white/5 bg-gray-900/50 p-2.5 text-center text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
-          >
-            <span className="block text-base mb-0.5">🏆</span>
-            {t.calculator.example3way}
           </button>
         </div>
 
@@ -159,19 +142,6 @@ export default function CalculatorPage() {
                 placeholder="e.g. 2.05"
                 value={odds2}
                 onChange={(e) => setOdds2(e.target.value)}
-                className="mt-1 border-white/10 bg-gray-800 text-white"
-              />
-            </div>
-            <div>
-              <label className="text-sm text-gray-400">
-                {t.calculator.odds3Label} <span className="text-gray-600">{t.calculator.odds3Optional}</span>
-              </label>
-              <Input
-                type="number"
-                step="0.01"
-                placeholder={t.calculator.odds3Placeholder}
-                value={odds3}
-                onChange={(e) => setOdds3(e.target.value)}
                 className="mt-1 border-white/10 bg-gray-800 text-white"
               />
             </div>
@@ -228,7 +198,7 @@ export default function CalculatorPage() {
               {result.isArb && (
                 <div className="space-y-2">
                   {result.stakes.map((stake, i) => {
-                    const odds = [odds1, odds2, odds3].filter(Boolean);
+                    const odds = [odds1, odds2];
                     return (
                       <div
                         key={i}

@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     "totals",
   ]) as MarketType[];
   const minProfit = parseFloat(searchParams.get("min_profit") || "0.5");
-  const totalStake = parseInt(searchParams.get("total_stake") || "1000000");
+  const totalStake = parseInt(searchParams.get("total_stake") || "100");
   const include8xbet = searchParams.get("include_8xbet") === "true";
   const forceRefresh = searchParams.get("force") === "true";
 
