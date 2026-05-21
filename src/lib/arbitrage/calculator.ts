@@ -110,7 +110,7 @@ export function scanMatchForArbitrage(
         if (!byPoint.has(point)) byPoint.set(point, []);
         byPoint.get(point)!.push(mo);
       }
-      for (const [, pointOdds] of byPoint) {
+      for (const pointOdds of Array.from(byPoint.values())) {
         const opp = checkMarketArbitrage(oddsData.match, marketType, pointOdds, minProfitPercent, totalStake);
         if (opp) opportunities.push(opp);
       }
@@ -123,7 +123,7 @@ export function scanMatchForArbitrage(
           if (!byPoint.has(point)) byPoint.set(point, []);
           byPoint.get(point)!.push(mo);
         }
-        for (const [, pointOdds] of byPoint) {
+        for (const pointOdds of Array.from(byPoint.values())) {
           const opp = checkMarketArbitrage(oddsData.match, marketType, pointOdds, minProfitPercent, totalStake);
           if (opp) opportunities.push(opp);
         }
@@ -184,6 +184,114 @@ function checkMarketArbitrage(
 }
 
 /**
+ * Generate a match identity key from team names + sport.
+ * Normalizes team names to lowercase, trimmed, for fuzzy matching.
+ */
+function matchIdentityKey(match: Match): string {
+  const home = match.home_team.toLowerCase().trim();
+  const away = match.away_team.toLowerCase().trim();
+  const sport = match.sport;
+  // Sort teams alphabetically so home/away swap still matches
+  const teams = [home, away].sort().join("|");
+  return `${sport}:${teams}`;
+}
+
+/**
+ * Merge OddsData for the same real-world match coming from different sources
+ * (e.g. TheOddsAPI + 8xBet). Combines markets and deduplicates bookmaker entries.
+ */
+export function mergeDuplicateMatches(allOdds: OddsData[]): OddsData[] {
+  const merged = new Map<string, OddsData>();
+
+  for (const oddsData of allOdds) {
+    const key = matchIdentityKey(oddsData.match);
+    const existing = merged.get(key);
+
+    if (!existing) {
+      merged.set(key, oddsData);
+      continue;
+    }
+
+    // Merge markets: append new bookmaker odds, dedup by (bookmaker + marketType + point)
+    const marketTypes = ["h2h", "spreads", "totals"] as const;
+    for (const mt of marketTypes) {
+      const existingMarket = existing.markets[mt] || [];
+      const newMarket = oddsData.markets[mt] || [];
+
+      for (const mo of newMarket) {
+        // Check if this bookmaker already has an entry for the same point
+        const isDuplicate = existingMarket.some((eMo) => {
+          if (eMo.bookmaker !== mo.bookmaker) return false;
+          // Same bookmaker — check if point is the same
+          const ePoint = eMo.outcomes[0]?.point;
+          const mPoint = mo.outcomes[0]?.point;
+          // For h2h there's no point, so just dedup by bookmaker
+          if (mt === "h2h") return true;
+          return ePoint === mPoint;
+        });
+
+        if (!isDuplicate) {
+          existingMarket.push(mo);
+        }
+      }
+
+      existing.markets[mt] = existingMarket;
+    }
+  }
+
+  return Array.from(merged.values());
+}
+
+/**
+ * Deduplicate totals markets: remove bookmaker entries that have the exact same
+ * odds for all outcomes (meaning they offer nothing unique for arbitrage).
+ * Only keeps the entry with the best odds for each (outcome, point) combo.
+ */
+export function deduplicateTotals(oddsData: OddsData[]): OddsData[] {
+  return oddsData.map((od) => {
+    const newMarkets = { ...od.markets };
+
+    for (const mt of ["totals", "spreads"] as const) {
+      const market = newMarkets[mt];
+      if (!market || market.length === 0) continue;
+
+      // Group by point, then for each point: deduplicate bookmakers with identical odds
+      const byPoint = new Map<number | undefined, MarketOdds[]>();
+      for (const mo of market) {
+        const point = mo.outcomes[0]?.point;
+        if (!byPoint.has(point)) byPoint.set(point, []);
+        byPoint.get(point)!.push(mo);
+      }
+
+      const deduped: MarketOdds[] = [];
+      for (const pointOdds of Array.from(byPoint.values())) {
+        if (pointOdds.length <= 1) {
+          deduped.push(...pointOdds);
+          continue;
+        }
+
+        // Remove entries where ALL outcomes have identical odds to another entry
+        const seen = new Set<string>();
+        for (const mo of pointOdds) {
+          const sig = mo.outcomes
+            .map((o) => `${o.name}:${o.price}`)
+            .sort()
+            .join("|");
+          if (!seen.has(sig)) {
+            seen.add(sig);
+            deduped.push(mo);
+          }
+        }
+      }
+
+      newMarkets[mt] = deduped;
+    }
+
+    return { ...od, markets: newMarkets };
+  });
+}
+
+/**
  * Scan multiple matches and return all arbitrage opportunities sorted by profit
  */
 export function scanAllMatches(
@@ -191,9 +299,15 @@ export function scanAllMatches(
   minProfitPercent: number = 0.5,
   totalStake: number = 1_000_000
 ): ArbitrageOpportunity[] {
+  // 1. Merge same real-world matches from different sources
+  const merged = mergeDuplicateMatches(allOdds);
+
+  // 2. Deduplicate totals/spreads with identical odds across bookmakers
+  const deduped = deduplicateTotals(merged);
+
   const all: ArbitrageOpportunity[] = [];
 
-  for (const oddsData of allOdds) {
+  for (const oddsData of deduped) {
     const opps = scanMatchForArbitrage(oddsData, minProfitPercent, totalStake);
     all.push(...opps);
   }
