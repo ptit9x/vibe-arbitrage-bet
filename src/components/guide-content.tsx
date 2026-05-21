@@ -1,7 +1,6 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n/provider";
-import BottomNav from "@/components/bottom-nav";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -64,7 +63,7 @@ export default function GuideContent() {
   const { t } = useI18n();
 
   return (
-    <div className="min-h-screen bg-gray-950 pb-20">
+    <div className="min-h-screen bg-gray-950">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-gradient-to-r from-amber-600/80 to-orange-600/80 backdrop-blur-xl px-4 py-4 text-white shadow-lg">
         <div className="mx-auto max-w-lg">
@@ -431,7 +430,6 @@ export default function GuideContent() {
         </div>
       </div>
 
-      <BottomNav />
     </div>
   );
 }

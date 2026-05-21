@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import BottomNav from "@/components/bottom-nav";
 import Link from "next/link";
 import { getBookmakerUrl } from "@/lib/bookmakers";
 import { useI18n } from "@/lib/i18n/provider";
@@ -189,7 +188,7 @@ export default function AIAnalyzerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 pb-20">
+    <div className="min-h-screen bg-gray-950">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 px-4 py-4 text-white shadow-lg">
         <div className="mx-auto max-w-2xl">
@@ -702,7 +701,6 @@ export default function AIAnalyzerPage() {
         )}
       </div>
 
-      <BottomNav />
     </div>
   );
 }

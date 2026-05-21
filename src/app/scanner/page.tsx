@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import BottomNav from "@/components/bottom-nav";
 import { getBookmakerUrl } from "@/lib/bookmakers";
 import { useI18n } from "@/lib/i18n/provider";
 import type { ArbitrageOpportunity } from "@/lib/arbitrage/types";
@@ -14,7 +13,6 @@ import {
   Search,
   RefreshCw,
   HelpCircle,
-  ArrowLeft,
   Info,
   Zap,
   AlertCircle,
@@ -106,18 +104,12 @@ export default function ScannerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 pb-20">
+    <div className="min-h-screen bg-gray-950">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-4 text-white shadow-lg">
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-4 text-white shadow-lg">
         <div className="mx-auto max-w-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => router.push("/dashboard")}
-                className="text-white hover:bg-white/10 rounded-lg p-1 -ml-1"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
               <div>
                 <h1 className="text-xl font-bold flex items-center gap-2">
                   <Search className="h-5 w-5" />
@@ -431,7 +423,6 @@ export default function ScannerPage() {
         )}
       </div>
 
-      <BottomNav />
     </div>
   );
 }

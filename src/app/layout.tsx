@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { I18nProvider } from "@/lib/i18n/provider";
+import AppShell from "@/components/app-shell";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -31,7 +32,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <I18nProvider>
-          {children}
+          <AppShell>{children}</AppShell>
         </I18nProvider>
         <SpeedInsights />
       </body>

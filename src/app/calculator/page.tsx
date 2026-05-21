@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import BottomNav from "@/components/bottom-nav";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/provider";
 import {
@@ -146,7 +145,7 @@ export default function CalculatorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 pb-20">
+    <div className="min-h-screen bg-gray-950">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-4 text-white shadow-lg">
         <div className="mx-auto max-w-lg">
@@ -429,7 +428,6 @@ export default function CalculatorPage() {
         </Card>
       </div>
 
-      <BottomNav />
     </div>
   );
 }

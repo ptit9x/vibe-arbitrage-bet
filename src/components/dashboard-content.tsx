@@ -2,7 +2,6 @@
 
 import { useI18n } from "@/lib/i18n/provider";
 import Link from "next/link";
-import BottomNav from "@/components/bottom-nav";
 import {
   Search,
   Brain,
@@ -27,7 +26,7 @@ export default function DashboardContent({ displayName, initial }: DashboardCont
   const { t } = useI18n();
 
   return (
-    <div className="min-h-screen bg-gray-950 pb-20">
+    <div className="min-h-screen bg-gray-950">
       {/* Header with greeting */}
       <div className="bg-gradient-to-br from-gray-900 via-gray-900 to-emerald-950/30 border-b border-white/5">
         <div className="mx-auto max-w-lg px-4 py-5">
@@ -54,7 +53,6 @@ export default function DashboardContent({ displayName, initial }: DashboardCont
       </div>
 
       <div className="mx-auto max-w-lg px-4 py-5 space-y-5">
-        {/* Quick Actions */}
         <div>
           <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-gray-400">
             <Zap className="h-5 w-5 text-emerald-400" />
@@ -199,7 +197,6 @@ export default function DashboardContent({ displayName, initial }: DashboardCont
         </div>
       </div>
 
-      <BottomNav />
     </div>
   );
 }
