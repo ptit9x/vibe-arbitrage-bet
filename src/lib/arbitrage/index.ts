@@ -1,2 +1,2 @@
-export { type ArbitrageOpportunity, type ArbitrageLeg, type OddsData, type Match, type MarketOdds, type Sport, type MarketType, type Bookmaker, type Outcome, type TotalsLine } from "./types";
-export { impliedProbability, totalImpliedProbability, isArbitrage, profitPercent, calculateStakes, findBestOdds, scanMatchForArbitrage, scanAllMatches, mergeDuplicateMatches, deduplicateTotals, listAllTotals } from "./calculator";
+export { type ArbitrageOpportunity, type ArbitrageLeg, type OddsData, type Match, type MarketOdds, type Sport, type MarketType, type Bookmaker, type Outcome, type TotalsLine, type H2HLine, type SpreadLine } from "./types";
+export { impliedProbability, totalImpliedProbability, isArbitrage, profitPercent, calculateStakes, findBestOdds, scanMatchForArbitrage, scanAllMatches, mergeDuplicateMatches, deduplicateTotals, listAllTotals, listAllH2H, listAllSpreads } from "./calculator";

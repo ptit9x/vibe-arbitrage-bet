@@ -1,6 +1,6 @@
 // Core arbitrage detection and calculation engine
 
-import { ArbitrageLeg, ArbitrageOpportunity, MarketOdds, MarketType, Match, OddsData, TotalsLine } from "./types";
+import { ArbitrageLeg, ArbitrageOpportunity, MarketOdds, MarketType, Match, OddsData, TotalsLine, H2HLine, SpreadLine } from "./types";
 
 /**
  * Calculate implied probability from decimal odds
@@ -391,5 +391,117 @@ export function listAllTotals(
     return a.impliedTotal - b.impliedTotal;
   });
 
+  return results;
+}
+
+/**
+ * List ALL H2H (1X2) lines — best odds for Home/Draw/Away across bookmakers.
+ * Sorted by margin ascending (lowest margin = closest to arbitrage).
+ */
+export function listAllH2H(
+  allOdds: OddsData[]
+): H2HLine[] {
+  const merged = mergeDuplicateMatches(allOdds);
+  const deduped = deduplicateTotals(merged);
+  const results: H2HLine[] = [];
+
+  for (const oddsData of deduped) {
+    const h2h = oddsData.markets.h2h;
+    if (!h2h || h2h.length < 2) continue;
+
+    const bestHome = h2h.reduce((best, mo) => {
+      const o = mo.outcomes.find(out => out.name === "Home" || out.name === "1");
+      return o && o.price > best.odds ? { odds: o.price, bookmaker: mo.bookmaker, bookmaker_title: mo.bookmaker_title } : best;
+    }, { odds: 0, bookmaker: "", bookmaker_title: "" });
+
+    const bestDraw = h2h.reduce((best, mo) => {
+      const o = mo.outcomes.find(out => out.name === "Draw" || out.name === "X");
+      return o && o.price > best.odds ? { odds: o.price, bookmaker: mo.bookmaker, bookmaker_title: mo.bookmaker_title } : best;
+    }, { odds: 0, bookmaker: "", bookmaker_title: "" });
+
+    const bestAway = h2h.reduce((best, mo) => {
+      const o = mo.outcomes.find(out => out.name === "Away" || out.name === "2");
+      return o && o.price > best.odds ? { odds: o.price, bookmaker: mo.bookmaker, bookmaker_title: mo.bookmaker_title } : best;
+    }, { odds: 0, bookmaker: "", bookmaker_title: "" });
+
+    if (bestHome.odds <= 0 || bestAway.odds <= 0) continue;
+
+    // Draw may not exist for 2-way sports, but for soccer it should
+    const oddsArr = bestDraw.odds > 0
+      ? [bestHome.odds, bestDraw.odds, bestAway.odds]
+      : [bestHome.odds, bestAway.odds];
+
+    const impliedTotal = totalImpliedProbability(oddsArr);
+    const margin = Math.round((impliedTotal - 1) * 10000) / 100;
+
+    results.push({
+      id: `${oddsData.match.id}-h2h`,
+      match: oddsData.match,
+      bestHome,
+      bestDraw: bestDraw.odds > 0 ? bestDraw : { odds: 0, bookmaker: "", bookmaker_title: "" },
+      bestAway,
+      impliedTotal: Math.round(impliedTotal * 10000) / 10000,
+      margin,
+    });
+  }
+
+  results.sort((a, b) => a.impliedTotal - b.impliedTotal);
+  return results;
+}
+
+/**
+ * List ALL spread/handicap lines — best odds for each side at each point.
+ * Sorted by margin ascending.
+ */
+export function listAllSpreads(
+  allOdds: OddsData[]
+): SpreadLine[] {
+  const merged = mergeDuplicateMatches(allOdds);
+  const deduped = deduplicateTotals(merged);
+  const results: SpreadLine[] = [];
+
+  for (const oddsData of deduped) {
+    const spreads = oddsData.markets.spreads;
+    if (!spreads || spreads.length < 2) continue;
+
+    // Group by point
+    const byPoint = new Map<number, MarketOdds[]>();
+    for (const mo of spreads) {
+      const point = mo.outcomes[0]?.point ?? 0;
+      if (!byPoint.has(point)) byPoint.set(point, []);
+      byPoint.get(point)!.push(mo);
+    }
+
+    for (const [point, pointOdds] of Array.from(byPoint.entries())) {
+      if (pointOdds.length < 2) continue;
+
+      const bestHome = pointOdds.reduce((best, mo) => {
+        const o = mo.outcomes.find(out => out.name === "Home" || out.name === "1");
+        return o && o.price > best.odds ? { odds: o.price, bookmaker: mo.bookmaker, bookmaker_title: mo.bookmaker_title } : best;
+      }, { odds: 0, bookmaker: "", bookmaker_title: "" });
+
+      const bestAway = pointOdds.reduce((best, mo) => {
+        const o = mo.outcomes.find(out => out.name === "Away" || out.name === "2");
+        return o && o.price > best.odds ? { odds: o.price, bookmaker: mo.bookmaker, bookmaker_title: mo.bookmaker_title } : best;
+      }, { odds: 0, bookmaker: "", bookmaker_title: "" });
+
+      if (bestHome.odds <= 0 || bestAway.odds <= 0) continue;
+
+      const impliedTotal = totalImpliedProbability([bestHome.odds, bestAway.odds]);
+      const margin = Math.round((impliedTotal - 1) * 10000) / 100;
+
+      results.push({
+        id: `${oddsData.match.id}-spread-${point}`,
+        match: oddsData.match,
+        point,
+        bestHome,
+        bestAway,
+        impliedTotal: Math.round(impliedTotal * 10000) / 10000,
+        margin,
+      });
+    }
+  }
+
+  results.sort((a, b) => a.impliedTotal - b.impliedTotal);
   return results;
 }

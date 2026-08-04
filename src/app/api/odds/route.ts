@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchMultiSportOdds, normalizeOddsResponse } from "@/lib/odds/theoddsapi";
-import { scanAllMatches, listAllTotals } from "@/lib/arbitrage";
+import { scanAllMatches, listAllTotals, listAllH2H, listAllSpreads } from "@/lib/arbitrage";
 import { MarketType, OddsData } from "@/lib/arbitrage/types";
 import { oddsCache } from "@/lib/cache";
 
@@ -25,7 +25,8 @@ const ODDS_TTL = 60_000;
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const sports = searchParams.get("sports")?.split(",") || DEFAULT_SPORTS;
-  const markets = ["totals"] as MarketType[];
+  const marketsParam = searchParams.get("markets") || "totals";
+  const markets = marketsParam.split(",") as MarketType[];
   const minProfit = parseFloat(searchParams.get("min_profit") || "0.5");
   const totalStake = parseInt(searchParams.get("total_stake") || "100");
   const include8xbet = searchParams.get("include_8xbet") === "true";
@@ -89,6 +90,10 @@ export async function GET(request: NextRequest) {
   // 4. List all totals lines
   const all_totals = listAllTotals(allOdds, totalStake);
 
+  // 5. List all H2H + spreads (for Markets page)
+  const all_h2h = listAllH2H(allOdds);
+  const all_spreads = listAllSpreads(allOdds);
+
   return NextResponse.json({
     success: true,
     cached: !forceRefresh && oddsCache.has(oddsCacheKey),
@@ -100,6 +105,11 @@ export async function GET(request: NextRequest) {
     opportunities_found: opportunities.length,
     opportunities,
     all_totals,
+    all_markets: {
+      h2h: all_h2h,
+      spreads: all_spreads,
+      totals: all_totals,
+    },
     errors: errors.length > 0 ? errors : undefined,
     scanned_at: new Date().toISOString(),
   });

@@ -9,6 +9,7 @@ import {
   X,
   Home,
   Search,
+  LayoutGrid,
   Calculator,
   BookOpen,
   Globe,
@@ -18,6 +19,7 @@ import {
 const navItems = [
   { href: "/dashboard", icon: Home, labelKey: "home" as const },
   { href: "/scanner", icon: Search, labelKey: "scanner" as const },
+  { href: "/markets", icon: LayoutGrid, labelKey: "markets" as const },
   { href: "/calculator", icon: Calculator, labelKey: "calc" as const },
   { href: "/guide", icon: BookOpen, labelKey: "guide" as const },
 ];

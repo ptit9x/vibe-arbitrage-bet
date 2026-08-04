@@ -79,3 +79,27 @@ export type TotalsLine = {
   totalStake: number;
   guaranteedProfit: number;
 };
+
+// H2H (1X2) line result — best odds for Home/Draw/Away across bookmakers
+
+export type H2HLine = {
+  id: string;
+  match: Match;
+  bestHome: { odds: number; bookmaker: string; bookmaker_title: string };
+  bestDraw: { odds: number; bookmaker: string; bookmaker_title: string };
+  bestAway: { odds: number; bookmaker: string; bookmaker_title: string };
+  impliedTotal: number;      // sum of implied probs
+  margin: number;            // bookmaker margin % (impliedTotal - 1) * 100
+};
+
+// Spread/Handicap line result — best odds for each side at a given point
+
+export type SpreadLine = {
+  id: string;
+  match: Match;
+  point: number;             // handicap line e.g. -1.5
+  bestHome: { odds: number; bookmaker: string; bookmaker_title: string };
+  bestAway: { odds: number; bookmaker: string; bookmaker_title: string };
+  impliedTotal: number;
+  margin: number;
+};
