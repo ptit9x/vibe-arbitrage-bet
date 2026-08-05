@@ -190,6 +190,11 @@ export const translations = {
       legDraw: "Draw",
       legHome: "Home",
       legAway: "Away",
+      today: "Today",
+      tomorrow: "Tomorrow",
+      matchesLabel: "matches",
+      surebetsLabel: "surebet",
+      otherLeague: "Other",
     },
     markets: {
       title: "All Markets",
@@ -635,6 +640,11 @@ export const translations = {
       legDraw: "Hoà",
       legHome: "Chủ",
       legAway: "Khách",
+      today: "Hôm nay",
+      tomorrow: "Ngày mai",
+      matchesLabel: "trận",
+      surebetsLabel: "surebet",
+      otherLeague: "Khác",
     },
     markets: {
       title: "Tất Cả Kèo",

@@ -188,6 +188,7 @@ export function normalizeXbetOdds(
     const match: Match = {
       id: `8xbet-${event.id}`,
       sport: sportKey as Match["sport"],
+      league: event.tournamentName,
       commence_time: event.startTime
         ? new Date(event.startTime).toISOString()
         : new Date().toISOString(),

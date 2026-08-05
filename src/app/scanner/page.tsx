@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,9 +17,40 @@ import {
   Zap,
   AlertCircle,
   CheckCircle2,
-  XCircle,
+  ChevronDown,
   TrendingUp,
 } from "lucide-react";
+
+// ── Grouping helpers ──────────────────────────────────────────────
+
+type DateGroup = {
+  dateKey: string;    // YYYY-MM-DD for sorting
+  dateLabel: string;  // "Hôm nay", "Ngày mai", or "DD/MM"
+  lines: TotalsLine[];
+  surebetCount: number;
+};
+
+type LeagueGroup = {
+  league: string;
+  dates: DateGroup[];
+  totalSurebets: number;
+  totalMatches: number;
+};
+
+function getDateKey(isoTime: string): string {
+  return isoTime.split("T")[0];
+}
+
+function formatDateLabel(isoTime: string, today: Date, t: { scanner: { today: string; tomorrow: string } }): string {
+  const matchDate = new Date(isoTime);
+  const matchDay = new Date(matchDate.getFullYear(), matchDate.getMonth(), matchDate.getDate());
+  const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const diffMs = matchDay.getTime() - todayDay.getTime();
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return t.scanner.today;
+  if (diffDays === 1) return t.scanner.tomorrow;
+  return matchDate.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
+}
 
 export default function ScannerPage() {
   const router = useRouter();
@@ -33,6 +64,7 @@ export default function ScannerPage() {
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [include8xbet, setInclude8xbet] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
   const checkAuth = useCallback(async () => {
     const supabase = createClient();
@@ -88,6 +120,223 @@ export default function ScannerPage() {
   const bestProfit = surebetCount > 0
     ? Math.max(...allTotals.filter((t) => t.isArbitrage).map((t) => t.profitPercent))
     : 0;
+
+  // ── Group lines by league → date ────────────────────────────────
+  const groupedData = useMemo(() => {
+    const today = new Date();
+    const leagueMap = new Map<string, TotalsLine[]>();
+
+    for (const line of allTotals) {
+      const league = line.match.league || t.scanner.otherLeague;
+      if (!leagueMap.has(league)) leagueMap.set(league, []);
+      leagueMap.get(league)!.push(line);
+    }
+
+    const groups: LeagueGroup[] = [];
+
+    for (const [league, lines] of leagueMap) {
+      // Sort lines within league: surebets first, then by profit/implied
+      lines.sort((a, b) => {
+        if (a.isArbitrage && !b.isArbitrage) return -1;
+        if (!a.isArbitrage && b.isArbitrage) return 1;
+        if (a.isArbitrage && b.isArbitrage) return b.profitPercent - a.profitPercent;
+        return a.impliedTotal - b.impliedTotal;
+      });
+
+      // Group by date
+      const dateMap = new Map<string, TotalsLine[]>();
+      for (const line of lines) {
+        const dKey = getDateKey(line.match.commence_time);
+        if (!dateMap.has(dKey)) dateMap.set(dKey, []);
+        dateMap.get(dKey)!.push(line);
+      }
+
+      const dates: DateGroup[] = Array.from(dateMap.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([dKey, dLines]) => ({
+          dateKey: dKey,
+          dateLabel: formatDateLabel(dLines[0].match.commence_time, today, t),
+          lines: dLines,
+          surebetCount: dLines.filter((l) => l.isArbitrage).length,
+        }));
+
+      groups.push({
+        league,
+        dates,
+        totalSurebets: dates.reduce((s, d) => s + d.surebetCount, 0),
+        totalMatches: lines.length,
+      });
+    }
+
+    // Sort groups: leagues with surebets first (by surebet count desc), then alphabetically
+    groups.sort((a, b) => {
+      if (a.totalSurebets > 0 && b.totalSurebets === 0) return -1;
+      if (a.totalSurebets === 0 && b.totalSurebets > 0) return 1;
+      if (a.totalSurebets > 0 && b.totalSurebets > 0) return b.totalSurebets - a.totalSurebets;
+      return a.league.localeCompare(b.league);
+    });
+
+    return groups;
+  }, [allTotals, t]);
+
+  const toggleGroup = (key: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  // ── Render a single totals line card ────────────────────────────
+  const renderLineCard = (line: TotalsLine) => (
+    <Card
+      key={line.id}
+      className={`mb-2 overflow-hidden ${
+        line.isArbitrage
+          ? "border-emerald-500/30 bg-gray-900"
+          : "border-white/5 bg-gray-900"
+      }`}
+    >
+      {/* Match header */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <span className="text-lg shrink-0">
+            {sportEmoji[line.match.sport] || "🏆"}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-white truncate">
+              {line.match.home_team} vs {line.match.away_team}
+            </p>
+            <p className="text-xs text-gray-500">
+              {t.scanner.marketTotals}
+              <span className="ml-1 text-yellow-400">({line.point})</span>
+              {" • "}
+              {new Date(line.match.commence_time).toLocaleTimeString(
+                locale === "vi" ? "vi-VN" : "en-US",
+                { hour: "2-digit", minute: "2-digit" }
+              )}
+            </p>
+          </div>
+        </div>
+        <div className="text-right shrink-0 ml-2">
+          {line.isArbitrage ? (
+            <>
+              <p className="text-lg font-bold text-emerald-400">
+                +{line.profitPercent.toFixed(2)}%
+              </p>
+              <p className="text-xs text-emerald-500">{t.scanner.guaranteedProfitLabel}</p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-medium text-gray-400">
+                {line.impliedTotal.toFixed(4)}
+              </p>
+              <p className="text-xs text-gray-600">implied</p>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Over / Under */}
+      <CardContent className="p-0">
+        <div className="divide-y divide-white/5">
+          {/* Over */}
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-white">
+                {t.scanner.legOver}
+              </p>
+              <p className="text-sm text-gray-500 truncate">{line.bestOver.bookmaker_title}</p>
+              {getBookmakerUrl(line.bestOver.bookmaker, line.bestOver.bookmaker_title) && (
+                <a
+                  href={getBookmakerUrl(line.bestOver.bookmaker, line.bestOver.bookmaker_title)!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-blue-400 hover:text-blue-300 hover:underline transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {t.common.openBookmaker}
+                </a>
+              )}
+            </div>
+            <div className="flex items-center gap-4 shrink-0">
+              <div className="text-right">
+                <p className="text-sm text-gray-500">{t.common.odds}</p>
+                <p className="font-mono text-sm font-bold text-yellow-400">
+                  {line.bestOver.odds.toFixed(2)}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-500">{t.common.stake}</p>
+                <p className="font-mono text-sm font-medium text-white">
+                  {formatMoney(line.stakes[0])}.000đ
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-500">{t.common.payout}</p>
+                <p className="font-mono text-sm font-medium text-emerald-400">
+                  {formatMoney(line.payouts[0])}.000đ
+                </p>
+              </div>
+            </div>
+          </div>
+          {/* Under */}
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-white">
+                {t.scanner.legUnder}
+              </p>
+              <p className="text-sm text-gray-500 truncate">{line.bestUnder.bookmaker_title}</p>
+              {getBookmakerUrl(line.bestUnder.bookmaker, line.bestUnder.bookmaker_title) && (
+                <a
+                  href={getBookmakerUrl(line.bestUnder.bookmaker, line.bestUnder.bookmaker_title)!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-blue-400 hover:text-blue-300 hover:underline transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {t.common.openBookmaker}
+                </a>
+              )}
+            </div>
+            <div className="flex items-center gap-4 shrink-0">
+              <div className="text-right">
+                <p className="text-sm text-gray-500">{t.common.odds}</p>
+                <p className="font-mono text-sm font-bold text-yellow-400">
+                  {line.bestUnder.odds.toFixed(2)}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-500">{t.common.stake}</p>
+                <p className="font-mono text-sm font-medium text-white">
+                  {formatMoney(line.stakes[1])}.000đ
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-500">{t.common.payout}</p>
+                <p className="font-mono text-sm font-medium text-emerald-400">
+                  {formatMoney(line.payouts[1])}.000đ
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Summary */}
+        {line.isArbitrage && (
+          <div className="flex items-center justify-between bg-emerald-500/5 px-4 py-2 border-t border-emerald-500/20">
+            <span className="text-sm text-gray-400">
+              {t.common.capital}: <span className="text-white font-medium">{formatMoney(line.totalStake)}.000đ</span>
+            </span>
+            <span className="text-sm text-gray-400">
+              {t.common.profit}: <span className="text-emerald-400 font-bold">+{formatMoney(line.guaranteedProfit)}.000đ</span>
+            </span>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="min-h-screen bg-gray-950">
@@ -317,150 +566,90 @@ export default function ScannerPage() {
           </Card>
         )}
 
-        {/* All totals lines */}
-        {allTotals.map((line) => (
-          <Card
-            key={line.id}
-            className={`mb-3 overflow-hidden ${
-              line.isArbitrage
-                ? "border-emerald-500/30 bg-gray-900"
-                : "border-white/5 bg-gray-900"
-            }`}
-          >
-            {/* Match header */}
-            <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5">
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <span className="text-lg shrink-0">
-                  {sportEmoji[line.match.sport] || "🏆"}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-white truncate">
-                    {line.match.home_team} vs {line.match.away_team}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {t.scanner.marketTotals}
-                    <span className="ml-1 text-yellow-400">({line.point})</span>
-                  </p>
-                </div>
-              </div>
-              <div className="text-right shrink-0 ml-2">
-                {line.isArbitrage ? (
-                  <>
-                    <p className="text-lg font-bold text-emerald-400">
-                      +{line.profitPercent.toFixed(2)}%
-                    </p>
-                    <p className="text-xs text-emerald-500">{t.scanner.guaranteedProfitLabel}</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-sm font-medium text-gray-400">
-                      {line.impliedTotal.toFixed(4)}
-                    </p>
-                    <p className="text-xs text-gray-600">implied</p>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Over / Under */}
-            <CardContent className="p-0">
-              <div className="divide-y divide-white/5">
-                {/* Over */}
-                <div className="flex items-center justify-between px-4 py-3">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-white">
-                      {t.scanner.legOver}
-                    </p>
-                    <p className="text-sm text-gray-500 truncate">{line.bestOver.bookmaker_title}</p>
-                    {getBookmakerUrl(line.bestOver.bookmaker, line.bestOver.bookmaker_title) && (
-                      <a
-                        href={getBookmakerUrl(line.bestOver.bookmaker, line.bestOver.bookmaker_title)!}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[10px] text-blue-400 hover:text-blue-300 hover:underline transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {t.common.openBookmaker}
-                      </a>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-4 shrink-0">
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">{t.common.odds}</p>
-                      <p className="font-mono text-sm font-bold text-yellow-400">
-                        {line.bestOver.odds.toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">{t.common.stake}</p>
-                      <p className="font-mono text-sm font-medium text-white">
-                        {formatMoney(line.stakes[0])}.000đ
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">{t.common.payout}</p>
-                      <p className="font-mono text-sm font-medium text-emerald-400">
-                        {formatMoney(line.payouts[0])}.000đ
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                {/* Under */}
-                <div className="flex items-center justify-between px-4 py-3">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-white">
-                      {t.scanner.legUnder}
-                    </p>
-                    <p className="text-sm text-gray-500 truncate">{line.bestUnder.bookmaker_title}</p>
-                    {getBookmakerUrl(line.bestUnder.bookmaker, line.bestUnder.bookmaker_title) && (
-                      <a
-                        href={getBookmakerUrl(line.bestUnder.bookmaker, line.bestUnder.bookmaker_title)!}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[10px] text-blue-400 hover:text-blue-300 hover:underline transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {t.common.openBookmaker}
-                      </a>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-4 shrink-0">
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">{t.common.odds}</p>
-                      <p className="font-mono text-sm font-bold text-yellow-400">
-                        {line.bestUnder.odds.toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">{t.common.stake}</p>
-                      <p className="font-mono text-sm font-medium text-white">
-                        {formatMoney(line.stakes[1])}.000đ
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">{t.common.payout}</p>
-                      <p className="font-mono text-sm font-medium text-emerald-400">
-                        {formatMoney(line.payouts[1])}.000đ
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Summary */}
-              {line.isArbitrage && (
-                <div className="flex items-center justify-between bg-emerald-500/5 px-4 py-2 border-t border-emerald-500/20">
-                  <span className="text-sm text-gray-400">
-                    {t.common.capital}: <span className="text-white font-medium">{formatMoney(line.totalStake)}.000đ</span>
+        {/* ── Grouped results: by league → date ─────────────────── */}
+        {groupedData.map((group) => {
+          const hasSurebets = group.totalSurebets > 0;
+          return (
+            <div key={group.league} className="mb-4">
+              {/* League header bar */}
+              <button
+                onClick={() => toggleGroup(`league-${group.league}`)}
+                className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl mb-2 transition-colors ${
+                  hasSurebets
+                    ? "bg-emerald-500/10 border border-emerald-500/20"
+                    : "bg-gray-900 border border-white/5"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <ChevronDown
+                    className={`h-4 w-4 text-gray-400 transition-transform ${
+                      collapsedGroups.has(`league-${group.league}`) ? "-rotate-90" : ""
+                    }`}
+                  />
+                  <span className={`text-sm font-bold ${hasSurebets ? "text-emerald-400" : "text-gray-300"}`}>
+                    {group.league}
                   </span>
-                  <span className="text-sm text-gray-400">
-                    {t.common.profit}: <span className="text-emerald-400 font-bold">+{formatMoney(line.guaranteedProfit)}.000đ</span>
+                </div>
+                <div className="flex items-center gap-3 text-xs">
+                  {hasSurebets && (
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-medium">
+                      {group.totalSurebets} {t.scanner.surebetsLabel}
+                    </span>
+                  )}
+                  <span className="text-gray-500">
+                    {group.totalMatches} {t.scanner.matchesLabel}
                   </span>
+                </div>
+              </button>
+
+              {/* Collapsible content */}
+              {!collapsedGroups.has(`league-${group.league}`) && (
+                <div className="pl-1">
+                  {group.dates.map((dateGroup) => {
+                    const dateKey = `league-${group.league}-date-${dateGroup.dateKey}`;
+                    return (
+                      <div key={dateKey} className="mb-3">
+                        {/* Date sub-header */}
+                        <button
+                          onClick={() => toggleGroup(dateKey)}
+                          className="w-full flex items-center justify-between px-3 py-1.5 mb-1.5 rounded-lg hover:bg-white/5 transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            <ChevronDown
+                              className={`h-3.5 w-3.5 text-gray-500 transition-transform ${
+                                collapsedGroups.has(dateKey) ? "-rotate-90" : ""
+                              }`}
+                            />
+                            <span className="text-xs font-medium text-gray-400">
+                              {dateGroup.dateLabel}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-[11px]">
+                            {dateGroup.surebetCount > 0 && (
+                              <span className="text-emerald-500">
+                                {dateGroup.surebetCount} {t.scanner.surebetsLabel}
+                              </span>
+                            )}
+                            <span className="text-gray-600">
+                              {dateGroup.lines.length} {t.scanner.matchesLabel}
+                            </span>
+                          </div>
+                        </button>
+
+                        {/* Lines */}
+                        {!collapsedGroups.has(dateKey) && (
+                          <div>
+                            {dateGroup.lines.map(renderLineCard)}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
-            </CardContent>
-          </Card>
-        ))}
+            </div>
+          );
+        })}
 
         {/* Scan timestamp */}
         {lastScan && (
@@ -473,7 +662,6 @@ export default function ScannerPage() {
           </p>
         )}
       </div>
-
     </div>
   );
 }

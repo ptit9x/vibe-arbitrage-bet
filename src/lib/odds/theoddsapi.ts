@@ -101,6 +101,7 @@ export function normalizeOddsResponse(responses: OddsApiResponse[]): OddsData[] 
     const match: Match = {
       id: resp.id,
       sport: mapSportKey(resp.sport_key),
+      league: resp.sport_title,
       commence_time: resp.commence_time,
       home_team: resp.home_team,
       away_team: resp.away_team,

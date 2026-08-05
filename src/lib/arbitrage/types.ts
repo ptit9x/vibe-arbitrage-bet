@@ -26,6 +26,7 @@ export type MarketOdds = {
 export type Match = {
   id: string;
   sport: Sport;
+  league?: string; // e.g. "Premier League", "NBA"
   commence_time: string;
   home_team: string;
   away_team: string;
