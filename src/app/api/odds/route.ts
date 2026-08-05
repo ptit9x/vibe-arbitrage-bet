@@ -8,15 +8,15 @@ const ODDS_API_KEY = process.env.ODDS_API_KEY || "";
 
 const DEFAULT_SPORTS = [
   "soccer_epl",
-  "soccer_champions_league_eu",
-  "soccer_la_liga",
+  "soccer_spain_la_liga",
   "soccer_italy_serie_a",
   "soccer_germany_bundesliga",
-  "soccer_europa_league",
-  "basketball_nba",
-  "basketball_euroleague",
-  "tennis_atp_wimbledon",
-  "tennis_wta_wimbledon",
+  "soccer_france_ligue_one",
+  "soccer_uefa_champs_league",
+  "soccer_uefa_europa_league",
+  "soccer_efl_champ",
+  "soccer_conmebol_copa_libertadores",
+  "mma_mixed_martial_arts",
 ];
 
 // Cache TTL: 60s for raw odds (same as AI analyzer shares the cache)

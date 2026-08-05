@@ -8,12 +8,12 @@ const BASE_URL = "https://api.the-odds-api.com/v4";
 // Map our sport keys to TheOddsAPI sport keys
 const SPORT_MAP: Record<string, string> = {
   soccer: "soccer_epl",           // English Premier League (most popular)
-  soccer_champions: "soccer_champions_league_eu",
-  soccer_la_liga: "soccer_la_liga",
+  soccer_la_liga: "soccer_spain_la_liga",
+  soccer_champions: "soccer_uefa_champs_league",
   soccer_series_a: "soccer_italy_serie_a",
   soccer_bundesliga: "soccer_germany_bundesliga",
   basketball: "basketball_nba",
-  tennis: "tennis_atp_wimbledon",
+  tennis: "tennis_atp_canadian_open",
   baseball: "baseball_mlb",
   hockey: "icehockey_nhl",
   mma: "mma_mixed_martial_arts",
