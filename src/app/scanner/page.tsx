@@ -104,6 +104,12 @@ export default function ScannerPage() {
     return () => clearInterval(interval);
   }, [autoRefresh, scanOdds]);
 
+  // Auto-scan on page load
+  useEffect(() => {
+    scanOdds();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const formatMoney = (amount: number) =>
     new Intl.NumberFormat("vi-VN").format(Math.round(amount));
 
